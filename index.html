@@ -1,841 +1,1135 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>سیستم مدیریت نگهداری — اترین نخ</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg-primary:#ffffff;
-      --bg-secondary:#f7f7f5;
-      --bg-tertiary:#f0eeea;
-      --text-primary:#1a1a18;
-      --text-secondary:#6b6b66;
-      --text-tertiary:#9c9a92;
-      --border-t:rgba(0,0,0,0.1);
-      --border-s:rgba(0,0,0,0.18);
-      --border-p:rgba(0,0,0,0.28);
-      --accent:#534AB7;
-      --accent-dark:#3C3489;
-      --r:8px;
-      --rl:12px;
-    }
-    @media(prefers-color-scheme:dark){
-      :root{
-        --bg-primary:#1e1e1c;
-        --bg-secondary:#2a2a28;
-        --bg-tertiary:#323230;
-        --text-primary:#e8e6de;
-        --text-secondary:#9c9a92;
-        --text-tertiary:#6b6b66;
-        --border-t:rgba(255,255,255,0.1);
-        --border-s:rgba(255,255,255,0.18);
-        --border-p:rgba(255,255,255,0.28);
-      }
-    }
-    body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg-tertiary);color:var(--text-primary);min-height:100vh;font-size:14px}
-
-    .layout{display:flex;min-height:100vh}
-
-    /* Sidebar */
-    .sidebar{width:220px;background:var(--bg-secondary);border-left:0.5px solid var(--border-t);display:flex;flex-direction:column;padding:12px 8px;gap:4px;flex-shrink:0;position:fixed;top:0;right:0;bottom:0;overflow-y:auto}
-    .sidebar-brand{padding:8px 12px 16px;border-bottom:0.5px solid var(--border-t);margin-bottom:8px}
-    .sidebar-brand h2{font-size:15px;font-weight:500;color:var(--text-primary);display:flex;align-items:center;gap:8px}
-    .sidebar-brand p{font-size:11px;color:var(--text-secondary);margin-top:3px;padding-right:24px}
-    .nav-section{font-size:10px;font-weight:500;color:var(--text-tertiary);padding:8px 12px 4px;letter-spacing:.05em;text-transform:uppercase}
-    .nav-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--text-secondary);transition:background .15s,color .15s;user-select:none}
-    .nav-item:hover{background:var(--bg-primary);color:var(--text-primary)}
-    .nav-item.active{background:var(--bg-primary);color:var(--text-primary);font-weight:500;border:0.5px solid var(--border-s)}
-    .nav-item i{font-size:16px;width:18px;text-align:center}
-    .nav-badge{margin-right:auto;background:var(--accent);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px}
-
-    /* Main */
-    .main{flex:1;margin-right:220px;display:flex;flex-direction:column;min-height:100vh}
-    .topbar{padding:14px 24px;border-bottom:0.5px solid var(--border-t);display:flex;align-items:center;justify-content:space-between;background:var(--bg-primary);position:sticky;top:0;z-index:10}
-    .topbar-left{display:flex;align-items:center;gap:10px}
-    .topbar h1{font-size:16px;font-weight:500}
-    .topbar-actions{display:flex;gap:8px;align-items:center}
-    .content{padding:24px;flex:1}
-
-    /* Badges */
-    .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
-    .badge-purple{background:#EEEDFE;color:#3C3489;border:0.5px solid #AFA9EC}
-    .badge-warn{background:#faeeda;color:#633806}
-    .badge-success{background:#eaf3de;color:#27500a}
-    .badge-danger{background:#fcebeb;color:#791f1f}
-    .badge-info{background:#e6f1fb;color:#0c447c}
-    @media(prefers-color-scheme:dark){
-      .badge-purple{background:#26215C;color:#CECBF6;border-color:#534AB7}
-      .badge-warn{background:#412402;color:#fac775}
-      .badge-success{background:#173404;color:#c0dd97}
-      .badge-danger{background:#501313;color:#f7c1c1}
-      .badge-info{background:#042c53;color:#b5d4f4}
-    }
-
-    /* Stats */
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-    .stat-card{background:var(--bg-secondary);border-radius:var(--r);padding:14px 16px;border:0.5px solid var(--border-t)}
-    .stat-label{font-size:11px;color:var(--text-secondary);margin-bottom:6px}
-    .stat-value{font-size:26px;font-weight:500;color:var(--text-primary);line-height:1}
-    .stat-sub{font-size:11px;color:var(--text-tertiary);margin-top:4px}
-
-    /* Buttons */
-    .btn{padding:7px 14px;border-radius:var(--r);border:0.5px solid var(--border-s);background:transparent;cursor:pointer;font-size:13px;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px;transition:background .15s;font-family:inherit}
-    .btn:hover{background:var(--bg-secondary)}
-    .btn:active{transform:scale(.98)}
-    .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .btn-primary:hover{background:var(--accent-dark)}
-    .btn-sm{padding:4px 10px;font-size:12px}
-
-    /* Table */
-    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .section-header h3{font-size:14px;font-weight:500}
-    .table-wrap{border:0.5px solid var(--border-t);border-radius:var(--rl);overflow:hidden;background:var(--bg-primary)}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    th{padding:9px 16px;background:var(--bg-secondary);font-weight:500;font-size:12px;color:var(--text-secondary);border-bottom:0.5px solid var(--border-t);white-space:nowrap}
-    td{padding:11px 16px;border-bottom:0.5px solid var(--border-t);color:var(--text-primary);vertical-align:middle}
-    tr:last-child td{border-bottom:none}
-    tr.clickable:hover td{background:var(--bg-secondary);cursor:pointer}
-    .location-chain{display:flex;align-items:center;gap:3px;font-size:12px;color:var(--text-secondary);flex-wrap:wrap}
-    .location-chain .loc{color:var(--text-primary)}
-    .location-chain .sep{color:var(--text-tertiary)}
-
-    /* Pages */
-    .page{display:none}
-    .page.active{display:block}
-
-    /* Form */
-    .form-panel{background:var(--bg-primary);border:0.5px solid var(--border-t);border-radius:var(--rl);padding:24px;margin-bottom:20px}
-    .form-panel-header{margin-bottom:20px}
-    .form-panel-header h3{font-size:15px;font-weight:500}
-    .form-panel-header p{font-size:12px;color:var(--text-secondary);margin-top:4px}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .form-field{display:flex;flex-direction:column;gap:5px}
-    .form-field label{font-size:12px;color:var(--text-secondary);font-weight:500}
-    .form-field input,.form-field select,.form-field textarea{
-      padding:8px 10px;border-radius:var(--r);border:0.5px solid var(--border-s);
-      background:var(--bg-primary);color:var(--text-primary);font-size:13px;
-      font-family:inherit;outline:none;transition:border .15s
-    }
-    .form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--accent)}
-    .form-field textarea{resize:vertical;min-height:80px}
-    .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:0.5px solid var(--border-t)}
-    .full-span{grid-column:1/-1}
-
-    /* Work Order Cards */
-    .wo-card{background:var(--bg-primary);border:0.5px solid var(--border-t);border-radius:var(--rl);padding:16px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;cursor:pointer}
-    .wo-card:hover{border-color:var(--border-s)}
-    .wo-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-    .wo-id{font-size:11px;color:var(--text-secondary);margin-bottom:3px}
-    .wo-title{font-size:14px;font-weight:500}
-    .wo-meta{font-size:12px;color:var(--text-secondary);display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
-    .wo-meta span{display:flex;align-items:center;gap:4px}
-    .progress-bar{height:3px;border-radius:2px;background:var(--bg-tertiary);margin-top:14px;overflow:hidden}
-    .progress-fill{height:100%;border-radius:2px;transition:width .4s}
-
-    /* Detail */
-    .back-header{display:flex;align-items:center;gap:10px;margin-bottom:24px}
-    .back-header h2{font-size:15px;font-weight:500}
-    .detail-section{margin-bottom:24px}
-    .detail-section h4{font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:10px;padding-bottom:7px;border-bottom:0.5px solid var(--border-t);text-transform:uppercase;letter-spacing:.04em}
-    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .detail-item{padding:10px 12px;background:var(--bg-secondary);border-radius:var(--r)}
-    .detail-item .key{font-size:11px;color:var(--text-secondary);margin-bottom:3px}
-    .detail-item .val{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px}
-    .timeline{list-style:none;padding:0;position:relative}
-    .timeline::before{content:'';position:absolute;right:6px;top:8px;bottom:8px;width:1px;background:var(--border-t)}
-    .tl-item{display:flex;align-items:flex-start;gap:14px;padding:0 0 18px;position:relative}
-    .tl-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border-s);background:var(--bg-primary);flex-shrink:0;position:relative;z-index:1;margin-top:3px}
-    .tl-dot.done{background:#639922;border-color:#639922}
-    .tl-content{flex:1}
-    .tl-content strong{font-size:13px;font-weight:500}
-    .tl-content p{font-size:12px;color:var(--text-secondary);margin-top:2px}
-    .tl-time{font-size:11px;color:var(--text-tertiary);margin-top:2px;display:block}
-
-    /* Avatar */
-    .avatar{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:500;flex-shrink:0}
-    .av-lg{width:36px;height:36px;font-size:13px}
-    .av-sm{width:26px;height:26px;font-size:10px}
-    .av-purple{background:#EEEDFE;color:#3C3489}
-    .av-teal{background:#E1F5EE;color:#085041}
-    .av-coral{background:#FAECE7;color:#712B13}
-    .av-amber{background:#FAEEDA;color:#633806}
-    @media(prefers-color-scheme:dark){
-      .av-purple{background:#26215C;color:#CECBF6}
-      .av-teal{background:#04342C;color:#9FE1CB}
-      .av-coral{background:#4A1B0C;color:#F5C4B3}
-      .av-amber{background:#412402;color:#FAC775}
-    }
-
-    /* Parts */
-    .parts-list{display:flex;flex-direction:column;gap:6px}
-    .part-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-secondary);border-radius:var(--r);font-size:13px}
-    .part-qty{font-size:12px;color:var(--text-secondary);background:var(--bg-tertiary);padding:2px 8px;border-radius:20px}
-
-    /* Tabs */
-    .tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:0.5px solid var(--border-t)}
-    .tab-btn{padding:9px 18px;font-size:13px;cursor:pointer;background:none;border:none;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .15s;font-family:inherit}
-    .tab-btn:hover{color:var(--text-primary)}
-    .tab-btn.active{color:var(--text-primary);font-weight:500;border-bottom-color:var(--accent)}
-
-    /* Tree */
-    .tree-wrap{background:var(--bg-primary);border:0.5px solid var(--border-t);border-radius:var(--rl);padding:16px}
-    .tree-node{padding:7px 12px;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;transition:background .12s;user-select:none}
-    .tree-node:hover{background:var(--bg-secondary)}
-    .tree-node.selected{background:var(--bg-secondary);font-weight:500;color:var(--accent)}
-    .tree-children{padding-right:20px;border-right:1px solid var(--border-t);margin-right:10px;margin-top:2px}
-
-    /* Stock indicator */
-    .stock-bar{width:80px;height:6px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;display:inline-block}
-    .stock-fill{height:100%;border-radius:3px}
-
-    /* Notification toast */
-    .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--bg-primary);border:0.5px solid var(--border-s);border-radius:var(--rl);padding:12px 20px;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:999;opacity:0;transition:opacity .25s;pointer-events:none}
-    .toast.show{opacity:1}
-
-    @media(max-width:768px){
-      .sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:8px}
-      .main{margin-right:0}
-      .stats{grid-template-columns:1fr 1fr}
-      .form-grid{grid-template-columns:1fr}
-      .detail-grid{grid-template-columns:1fr}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سیستم نت اترین نخ</title>
 </head>
 <body>
-<div class="layout">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-brand">
-      <h2><i class="ti ti-building-factory-2"></i> اترین نخ</h2>
-      <p>سیستم مدیریت نگهداری</p>
-    </div>
-    <div class="nav-section">منو اصلی</div>
-    <div class="nav-item active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i> داشبورد</div>
-    <div class="nav-item" onclick="showPage('orders',this)"><i class="ti ti-clipboard-list"></i> درخواست‌ها <span class="nav-badge">7</span></div>
-    <div class="nav-item" onclick="showPage('new-order',this)"><i class="ti ti-plus"></i> درخواست جدید</div>
-    <div class="nav-section">تنظیمات</div>
-    <div class="nav-item" onclick="showPage('locations',this)"><i class="ti ti-map-pin"></i> لوکیشن‌ها</div>
-    <div class="nav-item" onclick="showPage('team',this)"><i class="ti ti-users"></i> تیم نت</div>
-    <div class="nav-item" onclick="showPage('parts',this)"><i class="ti ti-box"></i> انبار قطعات</div>
-    <div class="nav-item" onclick="showPage('causes',this)"><i class="ti ti-alert-triangle"></i> علل خرابی</div>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cream:#F5F0E8;--cream2:#EDE6D8;--cream3:#E2D9C8;
+  --navy:#1E2D4E;--navy2:#2C3F62;--navy3:#3B5075;
+  --orange:#E85D1A;--red:#C0392B;--yellow:#F4C242;--pink:#D95B8B;
+  --gray:#8A8680;--gray2:#C8C4BC;--white:#FFFFFF;--green:#27AE60;
+  --font:'Segoe UI',Tahoma,sans-serif;
+}
+body{direction:rtl;font-family:var(--font);background:var(--cream);color:var(--navy);min-height:100vh;}
+.app{display:flex;min-height:700px;}
+.sidebar{width:210px;background:var(--navy);color:#fff;display:flex;flex-direction:column;flex-shrink:0;}
+.sidebar-logo{padding:1rem;border-bottom:1px solid var(--navy3);display:flex;align-items:center;gap:8px;}
+.logo-icon{width:34px;height:34px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;}
+.logo-text{font-size:14px;font-weight:600;}.logo-sub{font-size:10px;opacity:.5;}
+.nav-section{padding:.5rem 1rem .2rem;font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:.4;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:.55rem 1rem;cursor:pointer;font-size:13px;border-right:3px solid transparent;transition:background .15s;}
+.nav-item:hover{background:var(--navy3);}.nav-item.active{background:var(--navy2);border-right-color:var(--orange);}
+.nav-badge{margin-right:auto;background:var(--orange);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 7px;}
+.nav-badge.red{background:var(--red);}
+.sidebar-footer{margin-top:auto;padding:.6rem .75rem;border-top:1px solid var(--navy3);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{background:var(--white);border-bottom:1px solid var(--gray2);padding:.65rem 1.25rem;display:flex;align-items:center;gap:8px;}
+.topbar-title{font-size:16px;font-weight:600;flex:1;}
+.content{flex:1;padding:1rem 1.25rem;overflow-y:auto;background:var(--cream);}
+.page{display:none;}.page.active{display:block;}
+.panel{background:var(--white);border-radius:12px;border:1px solid var(--gray2);overflow:hidden;margin-bottom:12px;}
+.panel-header{padding:.75rem 1rem;border-bottom:1px solid var(--cream2);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:14px;font-weight:600;}.panel-sub{font-size:12px;color:var(--gray);}
+.form-row{display:grid;gap:10px;margin-bottom:10px;}
+.form-row.c2{grid-template-columns:1fr 1fr;}.form-row.c3{grid-template-columns:1fr 1fr 1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;}
+.fi,.fs,.fta{border:1.5px solid var(--gray2);border-radius:8px;padding:.45rem .7rem;font-size:13px;font-family:var(--font);color:var(--navy);background:var(--white);outline:none;transition:border-color .15s;width:100%;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--orange);}
+.fta{resize:vertical;min-height:65px;}
+.btn{padding:.42rem .9rem;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--font);transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-p{background:var(--orange);color:#fff;}.btn-s{background:var(--green);color:#fff;}
+.btn-d{background:var(--red);color:#fff;}.btn-o{background:transparent;border:1.5px solid var(--navy);color:var(--navy);}
+.btn-g{background:var(--cream2);color:var(--navy);border:none;}.btn-sm{padding:.28rem .6rem;font-size:12px;}
+.badge{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;}
+.b-pend{background:#fff3cd;color:#856404;}.b-asgn{background:#cce5ff;color:#004085;}
+.b-done{background:#d4edda;color:#155724;}.b-rep{background:#f8d7da;color:#721c24;}.b-gray{background:var(--cream2);color:var(--gray);}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{background:var(--cream);padding:.45rem .8rem;text-align:right;font-size:11px;color:var(--gray);font-weight:600;border-bottom:1px solid var(--cream2);}
+.tbl td{padding:.5rem .8rem;border-bottom:1px solid var(--cream2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}.tbl tr:hover td{background:var(--cream);}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.sc{background:var(--white);border-radius:10px;padding:.85rem 1rem;border:1px solid var(--gray2);position:relative;overflow:hidden;}
+.sc::after{content:'';position:absolute;top:0;right:0;width:4px;height:100%;border-radius:0 10px 10px 0;}
+.sc-or::after{background:var(--orange)}.sc-rd::after{background:var(--red)}.sc-yl::after{background:var(--yellow)}.sc-pk::after{background:var(--pink)}
+.sl{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.sv{font-size:24px;font-weight:700;line-height:1;}.ss{font-size:11px;color:var(--gray);margin-top:3px;}
+.steps{display:flex;gap:0;margin-bottom:1rem;background:var(--cream2);border-radius:10px;padding:3px;}
+.step-btn{flex:1;padding:.4rem;border-radius:8px;border:none;background:transparent;font-size:12px;cursor:pointer;font-family:var(--font);color:var(--gray);font-weight:600;transition:all .15s;}
+.step-btn.active{background:var(--orange);color:#fff;}
+.daf-cell{width:44px;height:36px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:1px solid rgba(0,0,0,.1);cursor:pointer;}
+.daf-ok{background:var(--cream2);color:var(--gray);}.daf-fail{background:var(--red);color:#fff;}.daf-oil{background:var(--orange);color:#fff;}.daf-thr{background:var(--yellow);color:#7a5c00;}
+.rep-alert{background:#fff0ed;border:1.5px solid var(--orange);border-radius:10px;padding:.75rem 1rem;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:.6rem 1.2rem;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}.toast.ok{background:var(--green);}.toast.err{background:var(--red);}.toast.warn{background:var(--orange);}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-bg.show{opacity:1;pointer-events:all;}
+.modal-box{background:var(--white);border-radius:14px;padding:1.5rem;width:480px;max-height:85vh;overflow-y:auto;direction:rtl;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{cursor:pointer;font-size:20px;color:var(--gray);}
+.save-indicator{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray2);}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+
+.drop-zone{border:2px dashed var(--gray2);border-radius:12px;padding:2.5rem 1rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--orange);background:#fff8f5;}
+.drop-icon{font-size:40px;margin-bottom:.5rem;}
+.drop-text{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+.drop-sub{font-size:12px;color:var(--gray);}
+.sheet-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.xtab{padding:.35rem .85rem;border-radius:20px;border:1.5px solid var(--gray2);background:var(--white);font-size:12px;cursor:pointer;font-family:var(--font);color:var(--navy);font-weight:500;transition:all .15s;}
+.xtab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.xstep-wrap{display:flex;gap:0;background:var(--cream2);border-radius:10px;padding:3px;margin-bottom:1rem;}
+.xstep{flex:1;padding:.4rem;border-radius:8px;font-size:12px;text-align:center;font-weight:600;color:var(--gray);transition:all .15s;}
+.xstep.active{background:var(--orange);color:#fff;}.xstep.done{background:var(--green);color:#fff;}
+.col-select{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:220px;overflow-y:auto;}
+.col-item{display:flex;align-items:center;gap:6px;padding:.35rem .6rem;background:var(--cream);border-radius:6px;font-size:12px;}
+
+</style>
+
+<div class="toast" id="toast"></div>
+
+<div class="app">
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">A</div>
+    <div><div class="logo-text">اترین نخ</div><div class="logo-sub">سیستم نت</div></div>
   </div>
+  <div style="height:.5rem;"></div>
+  <div class="nav-section">داشبورد</div>
+  <div class="nav-item active" onclick="nav('dashboard',this)">📊 داشبورد</div>
+  <div class="nav-section">تعریف پایه</div>
+  <div class="nav-item" onclick="nav('locations',this)">🏭 سالن‌ها و زون‌ها</div>
+  <div class="nav-item" onclick="nav('machines',this)">⚙️ دستگاه‌ها</div>
+  <div class="nav-item" onclick="nav('technicians',this)">👷 تعمیرکاران</div>
+  <div class="nav-item" onclick="nav('failures',this)">📋 انواع خرابی</div>
+  <div class="nav-section">عملیات</div>
+  <div class="nav-item" onclick="nav('newreq',this)">📝 ثبت درخواست <span class="nav-badge" id="badge-open">0</span></div>
+  <div class="nav-item" onclick="nav('workorders',this)">🔧 تخصیص تعمیر</div>
+  <div class="nav-item" onclick="nav('repform',this)">✅ گزارش تعمیرکار</div>
+  <div class="nav-item" onclick="nav('approve',this)">🏷️ تایید واحد نت</div>
+  <div class="nav-section">تحلیل</div>
+  <div class="nav-item" onclick="nav('repeats',this)">🔄 خرابی تکراری <span class="nav-badge red" id="badge-rep">0</span></div>
+  <div class="nav-item" onclick="nav('analytics',this)">📈 گزارش‌ها</div>
+  <div class="nav-section">ابزار</div>
+  <div class="nav-item" onclick="nav('excel',this)">📊 Import از Excel</div>
+  <div class="sidebar-footer">
+    <div class="save-indicator" id="save-ind"><div class="save-dot" id="save-dot"></div><span id="save-txt">در حال بارگذاری...</span></div>
+    <div style="display:flex;gap:6px;margin-top:6px;">
+      <button class="btn btn-g btn-sm" style="flex:1;font-size:11px;" onclick="exportData()">📤 Export</button>
+      <label class="btn btn-g btn-sm" style="flex:1;font-size:11px;cursor:pointer;text-align:center;">📥 Import<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+    </div>
+    <button class="btn btn-sm" style="width:100%;margin-top:5px;font-size:11px;background:#f8d7da;color:var(--red);border:none;" onclick="confirmReset()">🗑 ریست کامل</button>
+  </div>
+</div>
 
-  <!-- Main -->
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-left">
-        <h1 id="page-title">داشبورد</h1>
-      </div>
-      <div class="topbar-actions">
-        <span class="badge badge-success"><i class="ti ti-circle-filled" style="font-size:7px"></i> آنلاین</span>
-        <span style="font-size:12px;color:var(--text-secondary)">رضا حسینی — سرپرست نت</span>
-        <div class="avatar av-lg av-purple">رح</div>
+<div class="main">
+<div class="topbar">
+  <div class="topbar-title" id="page-title">داشبورد</div>
+  <span style="font-size:11px;color:var(--gray);background:var(--cream2);padding:3px 10px;border-radius:6px;" id="db-info">بارگذاری...</span>
+</div>
+<div class="content">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="stats4">
+    <div class="sc sc-or"><div class="sl">درخواست باز</div><div class="sv" id="s-open">0</div><div class="ss">در انتظار</div></div>
+    <div class="sc sc-rd"><div class="sl">خرابی تکراری</div><div class="sv" id="s-rep">0</div><div class="ss">شناسایی شده</div></div>
+    <div class="sc sc-yl"><div class="sl">در انتظار تایید</div><div class="sv" id="s-pend">0</div><div class="ss">گزارش داده شده</div></div>
+    <div class="sc sc-pk"><div class="sl">تایید شده</div><div class="sv" id="s-done">0</div><div class="ss">کل تعمیرها</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">آخرین درخواست‌ها</div></div>
+    <table class="tbl"><thead><tr><th>#</th><th>لوکیشن</th><th>چشمه</th><th>داف</th><th>خرابی</th><th>وضعیت</th></tr></thead>
+    <tbody id="dash-tbody"><tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1.5rem;">هنوز درخواستی ثبت نشده</td></tr></tbody></table>
+  </div>
+  <div class="panel" id="rep-panel" style="display:none;">
+    <div class="panel-header"><div class="panel-title" style="color:var(--red);">⚠ هشدار خرابی تکراری</div></div>
+    <div id="rep-alerts" style="padding:.75rem;"></div>
+  </div>
+</div>
+
+<!-- LOCATIONS -->
+<div class="page" id="page-locations">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">افزودن سالن</div></div>
+      <div style="padding:.85rem;">
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">شماره سالن</div><input class="fi" id="h-num" placeholder="مثال: ۲"></div>
+          <div class="form-group"><div class="form-label">تعداد زون</div><input class="fi" id="h-zones" type="number" placeholder="۳" min="1" max="10"></div>
+        </div>
+        <div class="form-row"><div class="form-group"><div class="form-label">توضیح</div><input class="fi" id="h-desc" placeholder="مثال: سالن ریسندگی"></div></div>
+        <button class="btn btn-p" onclick="addHall()">+ افزودن سالن</button>
       </div>
     </div>
-
-    <div class="content">
-
-      <!-- ===== DASHBOARD ===== -->
-      <div class="page active" id="page-dashboard">
-        <div class="stats">
-          <div class="stat-card">
-            <div class="stat-label">درخواست‌های باز</div>
-            <div class="stat-value" style="color:#D85A30">7</div>
-            <div class="stat-sub">۲ اورژانسی</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">در حال انجام</div>
-            <div class="stat-value" style="color:#534AB7">4</div>
-            <div class="stat-sub">توسط ۳ تعمیرکار</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">تکمیل شده (این هفته)</div>
-            <div class="stat-value" style="color:#3B6D11">18</div>
-            <div class="stat-sub">میانگین ۴۵ دقیقه</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">قطعات مصرفی</div>
-            <div class="stat-value">23</div>
-            <div class="stat-sub">این ماه</div>
-          </div>
-        </div>
-
-        <div class="section-header">
-          <h3>آخرین درخواست‌ها</h3>
-          <button class="btn btn-sm" onclick="showPage('orders',null)">مشاهده همه <i class="ti ti-arrow-left"></i></button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>کد</th>
-                <th>مکان</th>
-                <th>مشکل</th>
-                <th>تعمیرکار</th>
-                <th>وضعیت</th>
-                <th>زمان</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="clickable" onclick="showOrderDetail('1047')">
-                <td style="font-weight:500;color:var(--accent)">#1047</td>
-                <td><div class="location-chain">سالن ۲ <span class="sep">›</span><span class="loc">زون ۱</span><span class="sep">›</span><span class="loc">ICB-3</span><span class="sep">›</span><span class="loc">ط۱/چ۹۷</span></div></td>
-                <td>روغن‌ریزی</td>
-                <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar av-sm av-teal">عر</div> علی رضایی</div></td>
-                <td><span class="badge badge-warn">در انجام</span></td>
-                <td style="color:var(--text-secondary);font-size:12px">۰۸:۰۰</td>
-              </tr>
-              <tr class="clickable" onclick="showOrderDetail('1046')">
-                <td style="font-weight:500;color:var(--accent)">#1046</td>
-                <td><div class="location-chain">سالن ۱ <span class="sep">›</span><span class="loc">زون ۳</span><span class="sep">›</span><span class="loc">RYF-7</span><span class="sep">›</span><span class="loc">ط۲/چ۱۲</span></div></td>
-                <td>پارگی تسمه</td>
-                <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar av-sm av-coral">حق</div> حسین قاسمی</div></td>
-                <td><span class="badge badge-success">تکمیل</span></td>
-                <td style="color:var(--text-secondary);font-size:12px">۰۷:۳۰</td>
-              </tr>
-              <tr class="clickable" onclick="showOrderDetail('1045')">
-                <td style="font-weight:500;color:var(--accent)">#1045</td>
-                <td><div class="location-chain">سالن ۳ <span class="sep">›</span><span class="loc">زون ۲</span><span class="sep">›</span><span class="loc">TWS-2</span><span class="sep">›</span><span class="loc">ط۱/چ۴۴</span></div></td>
-                <td>لرزش غیرعادی</td>
-                <td><span style="color:var(--text-tertiary);font-size:12px">تخصیص نیافته</span></td>
-                <td><span class="badge badge-danger">باز</span></td>
-                <td style="color:var(--text-secondary);font-size:12px">دیروز</td>
-              </tr>
-              <tr class="clickable" onclick="showOrderDetail('1044')">
-                <td style="font-weight:500;color:var(--accent)">#1044</td>
-                <td><div class="location-chain">سالن ۲ <span class="sep">›</span><span class="loc">زون ۴</span><span class="sep">›</span><span class="loc">ICB-5</span><span class="sep">›</span><span class="loc">ط۲/چ۱۰۳</span></div></td>
-                <td>قطع نخ مکرر</td>
-                <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar av-sm av-teal">عر</div> علی رضایی</div></td>
-                <td><span class="badge badge-success">تکمیل</span></td>
-                <td style="color:var(--text-secondary);font-size:12px">دیروز</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===== ORDERS LIST ===== -->
-      <div class="page" id="page-orders">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <div class="tabs" style="margin-bottom:0">
-            <button class="tab-btn active" onclick="filterOrders('all',this)">همه</button>
-            <button class="tab-btn" onclick="filterOrders('open',this)">باز (۷)</button>
-            <button class="tab-btn" onclick="filterOrders('progress',this)">در انجام (۴)</button>
-            <button class="tab-btn" onclick="filterOrders('done',this)">تکمیل (۱۸)</button>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="showPage('new-order',null)"><i class="ti ti-plus"></i> درخواست جدید</button>
-        </div>
-
-        <div class="wo-card" onclick="showOrderDetail('1047')">
-          <div class="wo-card-header">
-            <div>
-              <div class="wo-id">#1047 &nbsp;·&nbsp; ۱۴۰۳/۱۰/۱۵ &nbsp;·&nbsp; ۰۸:۰۰</div>
-              <div class="wo-title">روغن‌ریزی — چشمه ۹۷</div>
-              <div class="location-chain" style="margin-top:5px">سالن ۲ <span class="sep">›</span><span class="loc">زون ۱</span><span class="sep">›</span><span class="loc">ICB-3</span><span class="sep">›</span><span class="loc">طبقه اول</span><span class="sep">›</span><span class="loc">چشمه ۹۷</span></div>
-            </div>
-            <span class="badge badge-warn">در انجام</span>
-          </div>
-          <div class="wo-meta">
-            <span><i class="ti ti-user" style="font-size:13px"></i> درخواست: واحد تضمین کیفیت</span>
-            <span><i class="ti ti-tool" style="font-size:13px"></i> تعمیرکار: علی رضایی</span>
-            <span><i class="ti ti-alert-circle" style="font-size:13px"></i> علت: نشتی روغن</span>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:60%;background:#EF9F27"></div></div>
-        </div>
-
-        <div class="wo-card" onclick="showOrderDetail('1046')">
-          <div class="wo-card-header">
-            <div>
-              <div class="wo-id">#1046 &nbsp;·&nbsp; ۱۴۰۳/۱۰/۱۵ &nbsp;·&nbsp; ۰۷:۳۰</div>
-              <div class="wo-title">پارگی تسمه — چشمه ۱۲</div>
-              <div class="location-chain" style="margin-top:5px">سالن ۱ <span class="sep">›</span><span class="loc">زون ۳</span><span class="sep">›</span><span class="loc">RYF-7</span><span class="sep">›</span><span class="loc">طبقه دوم</span><span class="sep">›</span><span class="loc">چشمه ۱۲</span></div>
-            </div>
-            <span class="badge badge-success">تکمیل</span>
-          </div>
-          <div class="wo-meta">
-            <span><i class="ti ti-user" style="font-size:13px"></i> درخواست: کنترل کیفیت</span>
-            <span><i class="ti ti-tool" style="font-size:13px"></i> تعمیرکار: حسین قاسمی</span>
-            <span><i class="ti ti-clock" style="font-size:13px"></i> مدت: ۳۵ دقیقه</span>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#639922"></div></div>
-        </div>
-
-        <div class="wo-card" onclick="showOrderDetail('1045')">
-          <div class="wo-card-header">
-            <div>
-              <div class="wo-id">#1045 &nbsp;·&nbsp; ۱۴۰۳/۱۰/۱۴ &nbsp;·&nbsp; ۱۴:۱۵</div>
-              <div class="wo-title">لرزش غیرعادی — چشمه ۴۴</div>
-              <div class="location-chain" style="margin-top:5px">سالن ۳ <span class="sep">›</span><span class="loc">زون ۲</span><span class="sep">›</span><span class="loc">TWS-2</span><span class="sep">›</span><span class="loc">طبقه اول</span><span class="sep">›</span><span class="loc">چشمه ۴۴</span></div>
-            </div>
-            <span class="badge badge-danger">باز</span>
-          </div>
-          <div class="wo-meta">
-            <span><i class="ti ti-user" style="font-size:13px"></i> درخواست: سرپرست سالن</span>
-            <span><i class="ti ti-alert-circle" style="font-size:13px"></i> علت: بلبرینگ معیوب</span>
-            <span style="color:#D85A30;font-weight:500"><i class="ti ti-urgent" style="font-size:13px"></i> اولویت بالا</span>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:5%;background:#E24B4A"></div></div>
-        </div>
-      </div>
-
-      <!-- ===== NEW ORDER FORM ===== -->
-      <div class="page" id="page-new-order">
-        <div class="form-panel">
-          <div class="form-panel-header">
-            <h3>ثبت درخواست تعمیر جدید</h3>
-            <p>مشخصات مکان و نوع مشکل را وارد کنید</p>
-          </div>
-          <div class="form-grid">
-            <div class="form-field">
-              <label>سالن</label>
-              <select id="sel-hall" onchange="updateZone()">
-                <option value="">انتخاب کنید...</option>
-                <option value="1">سالن ۱ — ریسندگی پایه</option>
-                <option value="2">سالن ۲ — پلی‌استر</option>
-                <option value="3">سالن ۳ — تکمیل</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>زون</label>
-              <select id="sel-zone" onchange="updateMachine()">
-                <option value="">ابتدا سالن را انتخاب کنید</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>دستگاه</label>
-              <select id="sel-machine">
-                <option value="">ابتدا زون را انتخاب کنید</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>طبقه</label>
-              <select id="sel-floor">
-                <option value="1">طبقه اول</option>
-                <option value="2">طبقه دوم</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>شماره چشمه</label>
-              <input type="number" id="inp-spindle" placeholder="مثلاً ۹۷" min="1" max="200"/>
-            </div>
-            <div class="form-field">
-              <label>واحد درخواست‌دهنده</label>
-              <select>
-                <option>تضمین کیفیت</option>
-                <option>کنترل کیفیت</option>
-                <option>تولید</option>
-                <option>سرپرست سالن</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>علت خرابی</label>
-              <select>
-                <option>روغن‌ریزی</option>
-                <option>پارگی تسمه</option>
-                <option>قطع نخ مکرر</option>
-                <option>لرزش غیرعادی</option>
-                <option>نویز صوتی</option>
-                <option>خرابی سنسور</option>
-                <option>خرابی موتور</option>
-                <option>سایر</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>اولویت</label>
-              <select>
-                <option>عادی</option>
-                <option>بالا</option>
-                <option>اورژانسی</option>
-              </select>
-            </div>
-            <div class="form-field full-span">
-              <label>توضیحات</label>
-              <textarea id="inp-desc" placeholder="شرح دقیق مشکل را بنویسید..."></textarea>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="btn" onclick="showPage('dashboard',null)">انصراف</button>
-            <button class="btn btn-primary" onclick="submitOrder()"><i class="ti ti-check"></i> ثبت درخواست</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== ORDER DETAIL ===== -->
-      <div class="page" id="page-detail">
-        <div class="back-header">
-          <button class="btn" onclick="showPage('orders',null)"><i class="ti ti-arrow-right"></i> بازگشت</button>
-          <h2 id="detail-title">جزئیات درخواست</h2>
-          <span id="detail-badge"></span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
-          <div>
-            <div class="detail-section">
-              <h4>مشخصات مکان</h4>
-              <div class="detail-grid">
-                <div class="detail-item"><div class="key">سالن</div><div class="val" id="d-hall">—</div></div>
-                <div class="detail-item"><div class="key">زون</div><div class="val" id="d-zone">—</div></div>
-                <div class="detail-item"><div class="key">دستگاه</div><div class="val" id="d-machine">—</div></div>
-                <div class="detail-item"><div class="key">طبقه / چشمه</div><div class="val" id="d-spindle">—</div></div>
-              </div>
-            </div>
-            <div class="detail-section">
-              <h4>اطلاعات درخواست</h4>
-              <div class="detail-grid">
-                <div class="detail-item"><div class="key">درخواست‌دهنده</div><div class="val" id="d-requester">—</div></div>
-                <div class="detail-item"><div class="key">علت خرابی</div><div class="val" id="d-cause">—</div></div>
-                <div class="detail-item"><div class="key">تعمیرکار</div><div class="val" id="d-tech">—</div></div>
-                <div class="detail-item"><div class="key">مدت کار</div><div class="val" id="d-duration">—</div></div>
-              </div>
-            </div>
-            <div class="detail-section">
-              <h4>قطعات مصرفی</h4>
-              <div class="parts-list" id="d-parts"></div>
-            </div>
-          </div>
-          <div>
-            <div class="detail-section">
-              <h4>تایم‌لاین</h4>
-              <ul class="timeline" id="d-timeline"></ul>
-            </div>
-            <div class="form-actions" style="border-top:none;padding-top:0">
-              <button class="btn btn-primary" id="d-confirm-btn" onclick="confirmOrder()"><i class="ti ti-check"></i> تأیید و بستن</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== LOCATIONS ===== -->
-      <div class="page" id="page-locations">
-        <div class="section-header">
-          <h3>ساختار کارخانه</h3>
-          <button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> افزودن</button>
-        </div>
-        <div class="tree-wrap">
-          <div class="tree-node selected" style="font-weight:500"><i class="ti ti-building-factory-2" style="font-size:16px;color:var(--accent)"></i> کارخانه اترین نخ</div>
-          <div class="tree-children">
-            <div class="tree-node" onclick="toggleTree(this)"><i class="ti ti-chevron-down" style="font-size:13px"></i><i class="ti ti-home-2" style="font-size:14px"></i> سالن ۱ — ریسندگی پایه</div>
-            <div class="tree-children" id="sub-hall1">
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۱ <span style="color:var(--text-tertiary);font-size:11px">(۱۲ دستگاه · ۲۴ طبقه)</span></div>
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۲ <span style="color:var(--text-tertiary);font-size:11px">(۸ دستگاه · ۱۶ طبقه)</span></div>
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۳ <span style="color:var(--text-tertiary);font-size:11px">(۱۰ دستگاه · ۲۰ طبقه)</span></div>
-            </div>
-            <div class="tree-node" onclick="toggleTree(this)"><i class="ti ti-chevron-down" style="font-size:13px"></i><i class="ti ti-home-2" style="font-size:14px"></i> سالن ۲ — پلی‌استر</div>
-            <div class="tree-children" id="sub-hall2">
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۱ <span style="color:var(--text-tertiary);font-size:11px">(۶ دستگاه)</span></div>
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۲ <span style="color:var(--text-tertiary);font-size:11px">(۶ دستگاه)</span></div>
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۳ <span style="color:var(--text-tertiary);font-size:11px">(۴ دستگاه)</span></div>
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۴ <span style="color:var(--text-tertiary);font-size:11px">(۵ دستگاه)</span></div>
-            </div>
-            <div class="tree-node" onclick="toggleTree(this)"><i class="ti ti-chevron-down" style="font-size:13px"></i><i class="ti ti-home-2" style="font-size:14px"></i> سالن ۳ — تکمیل</div>
-            <div class="tree-children" id="sub-hall3">
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۱ <span style="color:var(--text-tertiary);font-size:11px">(۷ دستگاه)</span></div>
-              <div class="tree-node"><i class="ti ti-layout-grid" style="font-size:13px"></i> زون ۲ <span style="color:var(--text-tertiary);font-size:11px">(۹ دستگاه)</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== TEAM ===== -->
-      <div class="page" id="page-team">
-        <div class="section-header">
-          <h3>اعضای تیم نت</h3>
-          <button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> افزودن عضو</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>نام</th><th>نقش</th><th>تخصص</th><th>درخواست‌های باز</th><th>تلفن</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar av-sm av-purple">رح</div>رضا حسینی</div></td>
-                <td>سرپرست نت</td>
-                <td>مدیریت و بازرسی</td>
-                <td>—</td>
-                <td style="font-size:12px;color:var(--text-secondary)">۰۹۱۲-۱۱۱-۱۱۱۱</td>
-              </tr>
-              <tr>
-                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar av-sm av-teal">عر</div>علی رضایی</div></td>
-                <td>تعمیرکار ارشد</td>
-                <td>برق و ابزاردقیق</td>
-                <td><span class="badge badge-warn">۲</span></td>
-                <td style="font-size:12px;color:var(--text-secondary)">۰۹۱۲-۲۲۲-۲۲۲۲</td>
-              </tr>
-              <tr>
-                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar av-sm av-coral">حق</div>حسین قاسمی</div></td>
-                <td>تعمیرکار</td>
-                <td>مکانیک و انتقال قدرت</td>
-                <td><span class="badge badge-success">۰</span></td>
-                <td style="font-size:12px;color:var(--text-secondary)">۰۹۱۲-۳۳۳-۳۳۳۳</td>
-              </tr>
-              <tr>
-                <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar av-sm av-amber">مم</div>محمد محمدی</div></td>
-                <td>تعمیرکار</td>
-                <td>پنوماتیک و هیدرولیک</td>
-                <td><span class="badge badge-danger">۳</span></td>
-                <td style="font-size:12px;color:var(--text-secondary)">۰۹۱۲-۴۴۴-۴۴۴۴</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===== PARTS ===== -->
-      <div class="page" id="page-parts">
-        <div class="section-header">
-          <h3>انبار قطعات نت</h3>
-          <button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> افزودن قطعه</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>نام قطعه</th><th>واحد</th><th>موجودی</th><th>وضعیت</th><th>نمودار</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>تسمه V-Belt</td><td>عدد</td><td>24</td>
-                <td><span class="badge badge-success">کافی</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:80%;background:#639922"></div></div></td>
-              </tr>
-              <tr>
-                <td>بلبرینگ ۶۲۰۴</td><td>عدد</td><td>8</td>
-                <td><span class="badge badge-warn">کم</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:27%;background:#EF9F27"></div></div></td>
-              </tr>
-              <tr>
-                <td>روغن اسپیندل</td><td>لیتر</td><td>45</td>
-                <td><span class="badge badge-success">کافی</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:90%;background:#639922"></div></div></td>
-              </tr>
-              <tr>
-                <td>پیچ M8</td><td>عدد</td><td>312</td>
-                <td><span class="badge badge-success">کافی</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:100%;background:#639922"></div></div></td>
-              </tr>
-              <tr>
-                <td>فیلتر هوا</td><td>عدد</td><td>3</td>
-                <td><span class="badge badge-danger">بحرانی</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:10%;background:#E24B4A"></div></div></td>
-              </tr>
-              <tr>
-                <td>واشر لاستیکی</td><td>عدد</td><td>56</td>
-                <td><span class="badge badge-success">کافی</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:70%;background:#639922"></div></div></td>
-              </tr>
-              <tr>
-                <td>سنسور مجاورتی</td><td>عدد</td><td>2</td>
-                <td><span class="badge badge-danger">بحرانی</span></td>
-                <td><div class="stock-bar"><div class="stock-fill" style="width:7%;background:#E24B4A"></div></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===== CAUSES ===== -->
-      <div class="page" id="page-causes">
-        <div class="section-header">
-          <h3>علل خرابی</h3>
-          <button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> افزودن علت</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>عنوان</th><th>دسته‌بندی</th><th>توضیح</th><th>تعداد وقوع</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>نشتی روغن</td><td><span class="badge badge-info">مکانیک</span></td><td style="font-size:12px;color:var(--text-secondary)">نشتی از مسیر روغن‌کاری اسپیندل</td><td>۱۴</td></tr>
-              <tr><td>پارگی تسمه</td><td><span class="badge badge-info">مکانیک</span></td><td style="font-size:12px;color:var(--text-secondary)">تسمه انتقال قدرت دستگاه</td><td>۲۲</td></tr>
-              <tr><td>قطع نخ مکرر</td><td><span class="badge badge-warn">فرآیند</span></td><td style="font-size:12px;color:var(--text-secondary)">مشکل در تنش نخ یا گره‌خوردگی</td><td>۳۱</td></tr>
-              <tr><td>لرزش غیرعادی</td><td><span class="badge badge-info">مکانیک</span></td><td style="font-size:12px;color:var(--text-secondary)">بلبرینگ معیوب یا عدم بالانس</td><td>۹</td></tr>
-              <tr><td>خرابی سنسور</td><td><span class="badge badge-purple">برق</span></td><td style="font-size:12px;color:var(--text-secondary)">سنسور مجاورتی یا اندکودر</td><td>۷</td></tr>
-              <tr><td>نویز صوتی</td><td><span class="badge badge-info">مکانیک</span></td><td style="font-size:12px;color:var(--text-secondary)">سایش قطعات متحرک</td><td>۵</td></tr>
-              <tr><td>خرابی موتور</td><td><span class="badge badge-purple">برق</span></td><td style="font-size:12px;color:var(--text-secondary)">موتور اسپیندل یا موتور اصلی</td><td>۳</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">سالن‌های ثبت شده</div><span class="panel-sub" id="h-count">۰ سالن</span></div>
+      <div style="padding:.75rem;" id="h-list"><div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">هنوز ثبت نشده</div></div>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast"><i class="ti ti-check" style="color:#639922"></i> <span id="toast-msg"></span></div>
+<!-- MACHINES -->
+<div class="page" id="page-machines">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">افزودن دستگاه</div></div>
+      <div style="padding:.85rem;">
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">سالن</div><select class="fs" id="m-hall" onchange="mFillZone()"><option value="">انتخاب...</option></select></div>
+          <div class="form-group"><div class="form-label">زون</div><select class="fs" id="m-zone"><option value="">ابتدا سالن</option></select></div>
+        </div>
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">کد دستگاه</div><input class="fi" id="m-code" placeholder="مثال: ICB3"></div>
+          <div class="form-group"><div class="form-label">مدل</div><input class="fi" id="m-model" placeholder="مثال: Murata 21C"></div>
+        </div>
+        <div class="form-row c3">
+          <div class="form-group"><div class="form-label">طبقات</div><select class="fs" id="m-floors"><option value="1">۱ طبقه</option><option value="2">۲ طبقه</option></select></div>
+          <div class="form-group"><div class="form-label">چشمه/طبقه</div><input class="fi" id="m-eyes" type="number" placeholder="100" min="1"></div>
+          <div class="form-group"><div class="form-label">روز/داف</div><input class="fi" id="m-daf" type="number" placeholder="۷" value="7" min="1"></div>
+        </div>
+        <button class="btn btn-p" onclick="addMachine()">+ افزودن دستگاه</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">دستگاه‌های ثبت شده</div><span class="panel-sub" id="m-count">۰</span></div>
+      <table class="tbl"><thead><tr><th>کد</th><th>سالن/زون</th><th>طبقه</th><th>چشمه</th><th>روز/داف</th><th></th></tr></thead>
+      <tbody id="m-tbody"><tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- TECHNICIANS -->
+<div class="page" id="page-technicians">
+  <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:12px;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">ثبت تعمیرکار</div></div>
+      <div style="padding:.85rem;">
+        <div class="form-row"><div class="form-group"><div class="form-label">نام کامل</div><input class="fi" id="t-name" placeholder="احمد محمدی"></div></div>
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">نام کاربری</div><input class="fi" id="t-user" placeholder="ahmadi_t"></div>
+          <div class="form-group"><div class="form-label">تخصص</div><select class="fs" id="t-spec"><option>مکانیک</option><option>برق</option><option>روغن‌کاری</option><option>نخ‌ریسی</option><option>عمومی</option></select></div>
+        </div>
+        <button class="btn btn-p" onclick="addTech()">+ ثبت تعمیرکار</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">لیست تعمیرکاران</div><span class="panel-sub" id="t-count">۰ نفر</span></div>
+      <table class="tbl"><thead><tr><th>نام</th><th>کاربری</th><th>تخصص</th><th>تعمیر</th><th>تاییدیه</th><th></th></tr></thead>
+      <tbody id="t-tbody"><tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- FAILURE TYPES -->
+<div class="page" id="page-failures">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">تعریف نوع خرابی</div></div>
+      <div style="padding:.85rem;">
+        <div class="form-row"><div class="form-group"><div class="form-label">عنوان</div><input class="fi" id="f-title" placeholder="مثال: خرابی پیچ"></div></div>
+        <div class="form-row"><div class="form-group"><div class="form-label">دسته‌بندی</div><select class="fs" id="f-cat"><option>مکانیکی</option><option>الکتریکی</option><option>نخ</option><option>روغن‌کاری</option><option>سایر</option></select></div></div>
+        <div class="form-row"><div class="form-group"><div class="form-label">توضیح</div><textarea class="fta" id="f-desc" placeholder="شرح خرابی..."></textarea></div></div>
+        <button class="btn btn-p" onclick="addFailure()">+ افزودن خرابی</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">انواع ثبت شده</div></div>
+      <table class="tbl"><thead><tr><th>عنوان</th><th>دسته</th><th>استفاده</th><th></th></tr></thead>
+      <tbody id="f-tbody"><tr><td colspan="4" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- NEW REQUEST -->
+<div class="page" id="page-newreq">
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">📝 ثبت درخواست تعمیر</div></div>
+    <div style="padding:1rem;">
+      <div class="steps"><button class="step-btn active" onclick="rStep(0)">۱. لوکیشن</button><button class="step-btn" onclick="rStep(1)">۲. خرابی</button><button class="step-btn" onclick="rStep(2)">۳. تایید</button></div>
+      <div id="rs0">
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">واحد درخواست‌دهنده</div><select class="fs" id="rq-unit"><option>تضمین کیفیت</option><option>کنترل کیفیت</option><option>تولید</option></select></div>
+          <div class="form-group"><div class="form-label">سالن</div><select class="fs" id="rq-hall" onchange="rqZone()"><option value="">انتخاب...</option></select></div>
+        </div>
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">زون</div><select class="fs" id="rq-zone" onchange="rqMachine()"><option value="">ابتدا سالن</option></select></div>
+          <div class="form-group"><div class="form-label">دستگاه</div><select class="fs" id="rq-machine" onchange="rqFloor()"><option value="">انتخاب...</option></select></div>
+        </div>
+        <div class="form-row c3">
+          <div class="form-group"><div class="form-label">طبقه</div><select class="fs" id="rq-floor"><option value="">انتخاب...</option></select></div>
+          <div class="form-group"><div class="form-label">شماره چشمه</div><input class="fi" id="rq-eye" type="number" placeholder="مثال: 97" min="1"></div>
+          <div class="form-group"><div class="form-label">شماره داف</div><input class="fi" id="rq-daf" placeholder="مثال: 003"><div style="font-size:10px;color:var(--gray);margin-top:2px;">مرتبه پر شدن چشمه</div></div>
+        </div>
+        <button class="btn btn-p" onclick="rStep(1)">ادامه ←</button>
+      </div>
+      <div id="rs1" style="display:none;">
+        <div class="form-row c2">
+          <div class="form-group"><div class="form-label">نوع خرابی</div><select class="fs" id="rq-ft"><option value="">انتخاب...</option></select></div>
+          <div class="form-group"><div class="form-label">اهمیت</div><select class="fs" id="rq-prio"><option value="normal">عادی</option><option value="urgent">فوری</option><option value="critical">بحرانی 🔴</option></select></div>
+        </div>
+        <div class="form-row"><div class="form-group"><div class="form-label">توضیح</div><textarea class="fta" id="rq-desc" placeholder="شرح کامل مشکل..."></textarea></div></div>
+        <div style="display:flex;gap:8px;"><button class="btn btn-g" onclick="rStep(0)">← برگشت</button><button class="btn btn-p" onclick="rStep(2)">ادامه ←</button></div>
+      </div>
+      <div id="rs2" style="display:none;">
+        <div style="background:var(--cream2);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;" id="rq-prev"></div>
+        <div id="rq-warn" style="display:none;" class="rep-alert"><span style="font-size:20px;">⚠️</span><div><div style="font-weight:700;color:var(--red);font-size:13px;">هشدار: خرابی احتمالاً تکراری!</div><div style="font-size:12px;color:var(--gray);" id="rq-warn-msg"></div></div></div>
+        <div style="display:flex;gap:8px;"><button class="btn btn-g" onclick="rStep(1)">← برگشت</button><button class="btn btn-s" onclick="submitReq()">✓ ثبت نهایی</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WORK ORDERS -->
+<div class="page" id="page-workorders">
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">🔧 درخواست‌های در انتظار تخصیص</div></div>
+    <div style="padding:.85rem;" id="wo-pending"><div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">درخواستی نیست</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">کارهای در جریان</div></div>
+    <table class="tbl"><thead><tr><th>#</th><th>دستگاه/چشمه</th><th>داف</th><th>خرابی</th><th>تعمیرکار</th><th>وضعیت</th></tr></thead>
+    <tbody id="wo-tbody"><tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr></tbody></table>
+  </div>
+</div>
+
+<!-- REPORT FORM -->
+<div class="page" id="page-repform">
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">✅ گزارش تعمیرکار</div></div>
+    <div style="padding:.85rem;">
+      <div class="form-row"><div class="form-group"><div class="form-label">انتخاب کار تخصیص یافته</div><select class="fs" id="rep-wo" onchange="repWoChange()"><option value="">انتخاب...</option></select></div></div>
+      <div id="rep-info" style="display:none;background:var(--cream2);border-radius:8px;padding:.6rem .85rem;font-size:13px;margin-bottom:.75rem;"></div>
+      <div class="form-row c2">
+        <div class="form-group"><div class="form-label">ساعت شروع</div><input class="fi" id="rep-s" type="time" value="08:00"></div>
+        <div class="form-group"><div class="form-label">ساعت پایان</div><input class="fi" id="rep-e" type="time" value="09:00"></div>
+      </div>
+      <div class="form-row"><div class="form-group"><div class="form-label">شرح تعمیر</div><textarea class="fta" id="rep-desc" placeholder="چه کاری انجام شد..."></textarea></div></div>
+      <div style="font-size:11px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">قطعات استفاده شده</div>
+      <div id="parts-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+      <button class="btn btn-g btn-sm" onclick="addPart()">+ افزودن قطعه</button>
+      <div class="form-row" style="margin-top:.75rem;"><div class="form-group"><div class="form-label">انبار دریافت</div><select class="fs" id="rep-wh"><option>انبار نت مرکزی</option><option>انبار فوری</option><option>انبار سالن ۱</option><option>انبار سالن ۲</option></select></div></div>
+      <button class="btn btn-s" onclick="submitReport()">✓ ثبت گزارش</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVE -->
+<div class="page" id="page-approve">
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">🏷️ تایید واحد نت</div></div>
+    <div id="ap-list" style="padding:.85rem;"><div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">گزارشی در انتظار نیست</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">تاریخچه</div></div>
+    <table class="tbl"><thead><tr><th>#</th><th>دستگاه</th><th>داف</th><th>تعمیرکار</th><th>مدت</th><th>قطعات</th><th>نتیجه</th></tr></thead>
+    <tbody id="ap-tbody"><tr><td colspan="7" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr></tbody></table>
+  </div>
+</div>
+
+<!-- REPEATS -->
+<div class="page" id="page-repeats">
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">🔄 خرابی‌های تکراری</div><span class="panel-sub">داف‌های متوالی یک دستگاه</span></div>
+    <div style="padding:.85rem;">
+      <div style="background:var(--cream2);border-radius:8px;padding:.6rem .85rem;font-size:13px;margin-bottom:.85rem;color:var(--gray);">
+        <strong style="color:var(--navy);">قانون:</strong> اگه یه دستگاه همون خرابی رو در داف‌های پشت‌سرهم (بدون وقفه) داشته باشه، تکرار محسوب میشه.
+      </div>
+      <div id="rep-list"><div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">داده‌ای موجود نیست</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title">نمای داف هر دستگاه</div></div>
+    <div id="daf-vis" style="padding:.75rem;"><div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">دستگاهی ثبت نشده</div></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="page" id="page-analytics">
+  <div class="stats4">
+    <div class="sc sc-or"><div class="sl">کل درخواست</div><div class="sv" id="an-tot">0</div></div>
+    <div class="sc sc-rd"><div class="sl">خرابی تکراری</div><div class="sv" id="an-rep">0</div></div>
+    <div class="sc sc-yl"><div class="sl">دستگاه‌ها</div><div class="sv" id="an-m">0</div></div>
+    <div class="sc sc-pk"><div class="sl">تعمیرکاران</div><div class="sv" id="an-t">0</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">خرابی بر اساس نوع</div></div>
+      <div style="padding:.75rem;" id="an-ft"><div style="color:var(--gray);font-size:13px;">داده‌ای نیست</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">عملکرد تعمیرکاران</div></div>
+      <div style="padding:.75rem;" id="an-tech"><div style="color:var(--gray);font-size:13px;">داده‌ای نیست</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- EXCEL IMPORT PAGE -->
+<div class="page" id="page-excel">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">📊 Import از Excel</div>
+      <button class="btn btn-p btn-sm" onclick="downloadTemplate()">📥 دانلود فایل نمونه</button>
+    </div>
+    <div style="padding:1rem;">
+      <div class="xstep-wrap">
+        <div class="xstep active" id="xst0">۱. آپلود</div>
+        <div class="xstep" id="xst1">۲. شیت</div>
+        <div class="xstep" id="xst2">۳. نگاشت</div>
+        <div class="xstep" id="xst3">۴. نتیجه</div>
+      </div>
+      <div id="xs0">
+        <div class="drop-zone" id="xl-drop" onclick="document.getElementById('xl-file').click()" ondragover="xlEv(event,'drag')" ondragleave="xlEv(event,'')" ondrop="xlDrop(event)">
+          <div class="drop-icon">📊</div>
+          <div class="drop-text">فایل Excel را اینجا بکش یا کلیک کن</div>
+          <div class="drop-sub">پشتیبانی: .xlsx  .xls  .csv</div>
+        </div>
+        <input type="file" id="xl-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="xlLoad(event.target.files[0])">
+        <div style="margin-top:1rem;background:var(--cream2);border-radius:10px;padding:.85rem 1rem;font-size:13px;">
+          <strong>راهنما:</strong> ابتدا فایل نمونه رو دانلود کن، داده‌ها رو وارد کن، بعد اینجا آپلود کن. هر شیت جداگانه import میشه.
+        </div>
+      </div>
+      <div id="xs1" style="display:none;">
+        <div style="font-size:12px;color:var(--gray);margin-bottom:.75rem;">فایل: <strong id="xl-fname"></strong></div>
+        <div class="sheet-tabs" id="xl-tabs"></div>
+        <div id="xl-preview-wrap" style="display:none;">
+          <div style="font-size:12px;color:var(--gray);margin-bottom:.5rem;" id="xl-rowcount"></div>
+          <div style="overflow-x:auto;max-height:240px;overflow-y:auto;border:1px solid var(--gray2);border-radius:8px;"><table class="tbl" id="xl-preview"></table></div>
+          <div style="margin-top:.75rem;display:flex;gap:8px;">
+            <button class="btn btn-p" onclick="xlGoStep(2)">ادامه ←</button>
+            <button class="btn btn-g" onclick="xlGoStep(0)">← برگشت</button>
+          </div>
+        </div>
+      </div>
+      <div id="xs2" style="display:none;">
+        <div class="form-row c2" style="margin-bottom:1rem;">
+          <div class="form-group">
+            <div class="form-label">نوع داده</div>
+            <select class="fs" id="xl-dtype" onchange="buildXlColMap()">
+              <option value="halls">سالن‌ها</option>
+              <option value="machines">دستگاه‌ها</option>
+              <option value="technicians">تعمیرکاران</option>
+              <option value="failureTypes">انواع خرابی</option>
+              <option value="requests">درخواست‌ها</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">تکراری‌ها</div>
+            <select class="fs" id="xl-dup">
+              <option value="skip">نادیده بگیر</option>
+              <option value="overwrite">بازنویسی</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:.35rem;">نگاشت ستون‌های اکسل به فیلدهای سیستم:</div>
+        <div id="xl-colmap" class="col-select"></div>
+        <div style="display:flex;gap:8px;margin-top:.85rem;">
+          <button class="btn btn-s" onclick="xlImport()">✓ Import کن</button>
+          <button class="btn btn-g" onclick="xlGoStep(1)">← برگشت</button>
+        </div>
+      </div>
+      <div id="xs3" style="display:none;">
+        <div style="background:#d4edda;border:1.5px solid #27AE60;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+          <div style="font-weight:700;color:#155724;font-size:14px;margin-bottom:4px;">✅ Import انجام شد!</div>
+          <div style="font-size:13px;color:#155724;" id="xl-result"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-p" onclick="xlGoStep(0)">Import شیت دیگری</button>
+          <button class="btn btn-g" onclick="nav('dashboard',null)">برو به داشبورد</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div></div>
+
+<!-- ASSIGN MODAL -->
+<div class="modal-bg" id="modal-assign">
+  <div class="modal-box">
+    <div class="modal-title">تخصیص تعمیرکار <span class="modal-close" onclick="closeModal('modal-assign')">×</span></div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:.75rem;" id="assign-info"></div>
+    <div class="form-group" style="margin-bottom:.75rem;"><div class="form-label">انتخاب تعمیرکار</div><select class="fs" id="assign-tech"><option value="">انتخاب...</option></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem;">
+      <div class="form-group"><div class="form-label">ساعت شروع</div><input class="fi" type="time" id="asgn-s" value="08:00"></div>
+      <div class="form-group"><div class="form-label">ساعت پایان</div><input class="fi" type="time" id="asgn-e" value="09:00"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-g" onclick="closeModal('modal-assign')">انصراف</button>
+      <button class="btn btn-p" onclick="doAssign()">تخصیص ✓</button>
+    </div>
+  </div>
+</div>
 
 <script>
-const titles = {
-  dashboard:'داشبورد', orders:'درخواست‌ها', 'new-order':'درخواست جدید',
-  detail:'جزئیات درخواست', locations:'لوکیشن‌ها', team:'تیم نت',
-  parts:'انبار قطعات', causes:'علل خرابی'
-};
-const zonesMap = {
-  '1':['زون ۱','زون ۲','زون ۳'],
-  '2':['زون ۱','زون ۲','زون ۳','زون ۴'],
-  '3':['زون ۱','زون ۲']
-};
-const machinesMap = {
-  '1-1':['ICB-1','ICB-2','RYF-3'],'1-2':['RYF-5','RYF-6'],'1-3':['RYF-7','RYF-8','TWS-1'],
-  '2-1':['ICB-3','ICB-4'],'2-2':['ICB-5','ICB-6'],'2-3':['TWS-3','TWS-4'],'2-4':['TWS-5'],
-  '3-1':['TWS-2','TWS-6','TWS-7'],'3-2':['TWS-8','TWS-9','ICB-7']
-};
-const orders = {
-  '1047':{title:'روغن‌ریزی — چشمه ۹۷',status:'progress',
-    hall:'سالن ۲ — پلی‌استر',zone:'زون ۱',machine:'ICB-3',spindle:'طبقه اول / چشمه ۹۷',
-    requester:'واحد تضمین کیفیت',cause:'نشتی روغن',
-    tech:'<div style="display:flex;align-items:center;gap:6px"><div class="avatar av-sm av-teal">عر</div>علی رضایی</div>',
-    duration:'۲۸ دقیقه',
-    parts:[{n:'تسمه V-Belt',q:'۱ عدد'},{n:'پیچ M8',q:'۴ عدد'},{n:'روغن اسپیندل',q:'۰.۵ لیتر'}],
-    timeline:[
-      {done:true,t:'درخواست ثبت شد',p:'توسط واحد تضمین کیفیت',time:'۰۷:۵۵'},
-      {done:true,t:'تعمیرکار تخصیص یافت',p:'علی رضایی — ارشد برق',time:'۰۸:۰۰'},
-      {done:true,t:'شروع عملیات',p:'بازرسی اولیه و شناسایی مشکل',time:'۰۸:۰۵'},
-      {done:false,t:'در انتظار تأیید سرپرست',p:'تعمیرکار: تسمه تعویض و روغن‌کاری انجام شد',time:'۰۸:۲۸'}
-    ]},
-  '1046':{title:'پارگی تسمه — چشمه ۱۲',status:'done',
-    hall:'سالن ۱ — ریسندگی پایه',zone:'زون ۳',machine:'RYF-7',spindle:'طبقه دوم / چشمه ۱۲',
-    requester:'کنترل کیفیت',cause:'پارگی تسمه',
-    tech:'<div style="display:flex;align-items:center;gap:6px"><div class="avatar av-sm av-coral">حق</div>حسین قاسمی</div>',
-    duration:'۳۵ دقیقه',
-    parts:[{n:'تسمه V-Belt',q:'۱ عدد'},{n:'پیچ M8',q:'۲ عدد'}],
-    timeline:[
-      {done:true,t:'درخواست ثبت شد',p:'توسط کنترل کیفیت',time:'۰۷:۲۰'},
-      {done:true,t:'تعمیرکار تخصیص یافت',p:'حسین قاسمی',time:'۰۷:۳۰'},
-      {done:true,t:'تسمه تعویض شد',p:'قطعه جدید از انبار دریافت شد',time:'۰۷:۵۵'},
-      {done:true,t:'تأیید و بسته شد',p:'توسط رضا حسینی — سرپرست نت',time:'۰۸:۰۵'}
-    ]},
-  '1045':{title:'لرزش غیرعادی — چشمه ۴۴',status:'open',
-    hall:'سالن ۳ — تکمیل',zone:'زون ۲',machine:'TWS-2',spindle:'طبقه اول / چشمه ۴۴',
-    requester:'سرپرست سالن',cause:'بلبرینگ معیوب',
-    tech:'<span style="color:var(--text-tertiary);font-size:12px">— تخصیص نیافته</span>',
-    duration:'—',parts:[],
-    timeline:[
-      {done:true,t:'درخواست ثبت شد',p:'توسط سرپرست سالن ۳',time:'۱۴:۱۵'},
-      {done:false,t:'در انتظار تخصیص تعمیرکار',p:'',time:''}
-    ]},
-  '1044':{title:'قطع نخ مکرر — چشمه ۱۰۳',status:'done',
-    hall:'سالن ۲ — پلی‌استر',zone:'زون ۴',machine:'ICB-5',spindle:'طبقه دوم / چشمه ۱۰۳',
-    requester:'تولید',cause:'قطع نخ مکرر',
-    tech:'<div style="display:flex;align-items:center;gap:6px"><div class="avatar av-sm av-teal">عر</div>علی رضایی</div>',
-    duration:'۵۰ دقیقه',
-    parts:[{n:'واشر لاستیکی',q:'۳ عدد'}],
-    timeline:[
-      {done:true,t:'درخواست ثبت شد',p:'توسط واحد تولید',time:'دیروز ۱۳:۰۰'},
-      {done:true,t:'بررسی و تنظیم تنش نخ',p:'علی رضایی',time:'دیروز ۱۳:۳۰'},
-      {done:true,t:'تکمیل و تأیید',p:'',time:'دیروز ۱۴:۲۰'}
-    ]}
-};
+// ── DB in memory ──
+let DB = { halls:[], machines:[], technicians:[], failureTypes:[], requests:[], workOrders:[], repairReports:[], _rId:1, _wId:1, _pId:1 };
+let _assignReqId = null;
+const STORAGE_KEY = 'atrin_nakh_db_v1';
 
-function showPage(id, navEl) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const pg = document.getElementById('page-'+id);
-  if(pg) pg.classList.add('active');
-  document.getElementById('page-title').textContent = titles[id]||'';
-  if(navEl) navEl.classList.add('active');
-  else {
-    document.querySelectorAll('.nav-item').forEach(n=>{
-      if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
-    });
-  }
+// ── STORAGE ──
+async function saveDB() {
+  try {
+    setSaveStatus('saving');
+    await window.storage.set(STORAGE_KEY, JSON.stringify(DB));
+    setSaveStatus('saved');
+  } catch(e) { setSaveStatus('error'); }
+}
+async function loadDB() {
+  try {
+    const r = await window.storage.get(STORAGE_KEY);
+    if(r && r.value) {
+      DB = JSON.parse(r.value);
+      setSaveStatus('loaded');
+    } else { setSaveStatus('empty'); }
+  } catch(e) { setSaveStatus('empty'); }
+  renderAll();
+}
+function setSaveStatus(s) {
+  const dot = document.getElementById('save-dot');
+  const txt = document.getElementById('save-txt');
+  const info = document.getElementById('db-info');
+  const states = {
+    saving:['#F4C242','در حال ذخیره...'],
+    saved:['#27AE60','ذخیره شد ✓'],
+    loaded:['#27AE60','داده‌ها بارگذاری شد'],
+    empty:['#8A8680','دیتابیس خالی'],
+    error:['#C0392B','خطا در ذخیره']
+  };
+  const [color, label] = states[s]||['#8A8680','—'];
+  dot.style.background = color;
+  txt.textContent = label;
+  info.textContent = `💾 ${DB.requests.length} درخواست | ${DB.machines.length} دستگاه | ${DB.technicians.length} نفر`;
 }
 
-function showOrderDetail(id) {
-  const o = orders[id];
-  if(!o) return;
-  document.getElementById('detail-title').textContent = '#'+id+' — '+o.title;
-  const statusMap = {progress:'badge-warn',done:'badge-success',open:'badge-danger'};
-  const statusLabel = {progress:'در انجام',done:'تکمیل',open:'باز'};
-  document.getElementById('detail-badge').innerHTML = `<span class="badge ${statusMap[o.status]}">${statusLabel[o.status]}</span>`;
-  document.getElementById('d-hall').textContent = o.hall;
-  document.getElementById('d-zone').textContent = o.zone;
-  document.getElementById('d-machine').textContent = o.machine;
-  document.getElementById('d-spindle').textContent = o.spindle;
-  document.getElementById('d-requester').textContent = o.requester;
-  document.getElementById('d-cause').textContent = o.cause;
-  document.getElementById('d-tech').innerHTML = o.tech;
-  document.getElementById('d-duration').textContent = o.duration;
-  const partsEl = document.getElementById('d-parts');
-  if(o.parts.length===0){
-    partsEl.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);padding:8px 0">قطعه‌ای ثبت نشده</div>';
-  } else {
-    partsEl.innerHTML = o.parts.map(p=>`<div class="part-row"><span>${p.n}</span><span class="part-qty">${p.q}</span></div>`).join('');
-  }
-  const tlEl = document.getElementById('d-timeline');
-  tlEl.innerHTML = o.timeline.map(tl=>`
-    <li class="tl-item">
-      <div class="tl-dot ${tl.done?'done':''}"></div>
-      <div class="tl-content">
-        <strong>${tl.t}</strong>
-        ${tl.p?`<p>${tl.p}</p>`:''}
-        ${tl.time?`<span class="tl-time">${tl.time}</span>`:''}
-      </div>
-    </li>`).join('');
-  const btn = document.getElementById('d-confirm-btn');
-  btn.style.display = o.status==='done' ? 'none' : 'inline-flex';
-  showPage('detail', null);
+function exportData() {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'atrin_nakh_' + new Date().toLocaleDateString('fa').replace(/\//g,'-') + '.json';
+  a.click();
+  toast('فایل Export شد 📤','ok');
+}
+function importData(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      DB = JSON.parse(ev.target.result);
+      await saveDB(); renderAll();
+      toast('داده‌ها Import شدند ✓','ok');
+    } catch { toast('فایل معتبر نیست','err'); }
+  };
+  reader.readAsText(file);
+}
+async function confirmReset() {
+  if(!confirm('همه داده‌ها پاک شوند؟')) return;
+  DB = { halls:[], machines:[], technicians:[], failureTypes:[], requests:[], workOrders:[], repairReports:[], _rId:1, _wId:1, _pId:1 };
+  await saveDB(); renderAll();
+  toast('ریست شد','warn');
 }
 
-function updateZone() {
-  const v = document.getElementById('sel-hall').value;
-  const sel = document.getElementById('sel-zone');
-  sel.innerHTML = '';
-  if(!v){sel.innerHTML='<option value="">ابتدا سالن را انتخاب کنید</option>';return;}
-  (zonesMap[v]||[]).forEach((z,i)=>{
-    const o=document.createElement('option');o.value=i+1;o.textContent=z;sel.appendChild(o);
-  });
-  updateMachine();
-}
-
-function updateMachine() {
-  const h = document.getElementById('sel-hall').value;
-  const z = document.getElementById('sel-zone').value;
-  const sel = document.getElementById('sel-machine');
-  sel.innerHTML = '';
-  const key = h+'-'+z;
-  const ms = machinesMap[key]||[];
-  if(!ms.length){sel.innerHTML='<option>ابتدا زون را انتخاب کنید</option>';return;}
-  ms.forEach(m=>{const o=document.createElement('option');o.textContent=m;sel.appendChild(o);});
-}
-
-function submitOrder() {
-  const hall = document.getElementById('sel-hall').value;
-  const spindle = document.getElementById('inp-spindle').value;
-  if(!hall){showToast('لطفاً سالن را انتخاب کنید');return;}
-  if(!spindle){showToast('لطفاً شماره چشمه را وارد کنید');return;}
-  showToast('درخواست #1048 با موفقیت ثبت شد');
-  setTimeout(()=>showPage('orders',null),1200);
-}
-
-function confirmOrder() {
-  showToast('درخواست با موفقیت تأیید و بسته شد');
-  setTimeout(()=>showPage('orders',null),1200);
-}
-
-function filterOrders(type, btn) {
-  document.querySelectorAll('.tabs .tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function toggleTree(el) {
-  const next = el.nextElementSibling;
-  if(next && next.classList.contains('tree-children')) {
-    next.style.display = next.style.display==='none' ? '' : 'none';
-    const ico = el.querySelector('.ti-chevron-down, .ti-chevron-left');
-    if(ico) ico.className = next.style.display==='none' ? 'ti ti-chevron-left' : 'ti ti-chevron-down';
-  }
-}
-
-function showToast(msg) {
+// ── UTILS ──
+function toast(msg, type='') {
   const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
+  t.textContent = msg; t.className = 'toast show' + (type?' '+type:'');
+  setTimeout(()=>t.classList.remove('show'), 2800);
 }
+function fid(n){ return '#'+String(n).padStart(4,'0'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function nav(p, el) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(el){ document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); el.classList.add('active'); }
+  const titles={dashboard:'داشبورد',locations:'سالن‌ها و زون‌ها',machines:'دستگاه‌ها',technicians:'تعمیرکاران',failures:'انواع خرابی',newreq:'ثبت درخواست',workorders:'تخصیص تعمیر',repform:'گزارش تعمیرکار',approve:'تایید واحد نت',repeats:'خرابی تکراری',analytics:'گزارش‌ها',excel:'Import از Excel'};
+  document.getElementById('page-title').textContent = titles[p]||p;
+  if(p==='newreq') initReqForm();
+  if(p==='workorders') renderWO();
+  if(p==='repform') renderRepForm();
+  if(p==='approve') renderApprove();
+  if(p==='repeats') renderRepeats();
+  if(p==='analytics') renderAnalytics();
+  if(p==='dashboard') renderDash();
+}
+function renderAll(){ renderHalls(); renderMachines(); renderTechs(); renderFailures(); renderDash(); renderWO(); renderRepForm(); renderApprove(); renderRepeats(); renderAnalytics(); updateBadges(); }
+function updateBadges() {
+  const open = DB.requests.filter(r=>r.status==='pending'||r.status==='assigned').length;
+  const rep = detectRepeats().length;
+  document.getElementById('badge-open').textContent = open;
+  document.getElementById('badge-rep').textContent = rep;
+  document.getElementById('s-open').textContent = open;
+  document.getElementById('s-rep').textContent = rep;
+  document.getElementById('s-pend').textContent = DB.workOrders.filter(w=>w.status==='reported').length;
+  document.getElementById('s-done').textContent = DB.repairReports.filter(r=>r.approved).length;
+  setSaveStatus('saved');
+}
+
+// ── HALLS ──
+async function addHall() {
+  const num=document.getElementById('h-num').value.trim();
+  const zones=parseInt(document.getElementById('h-zones').value)||1;
+  const desc=document.getElementById('h-desc').value.trim();
+  if(!num){toast('شماره سالن الزامی است','err');return;}
+  if(DB.halls.find(h=>h.num===num)){toast('این سالن قبلاً ثبت شده','err');return;}
+  DB.halls.push({id:Date.now(),num,desc,zones:Array.from({length:zones},(_,i)=>({id:Date.now()+i+1,num:String(i+1)}))});
+  document.getElementById('h-num').value=''; document.getElementById('h-desc').value=''; document.getElementById('h-zones').value='';
+  renderHalls(); fillMHalls(); fillRqHalls();
+  await saveDB(); toast(`سالن ${num} ثبت شد`,'ok');
+}
+function renderHalls() {
+  const c=document.getElementById('h-count'); const l=document.getElementById('h-list');
+  c.textContent=DB.halls.length+' سالن';
+  if(!DB.halls.length){l.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">هنوز ثبت نشده</div>';return;}
+  l.innerHTML=DB.halls.map(h=>`<div style="background:var(--cream2);border-radius:8px;padding:.55rem .75rem;margin-bottom:6px;display:flex;align-items:center;gap:8px;font-size:13px;"><strong>🏭 سالن ${h.num}</strong><span style="color:var(--gray);">${h.desc||''}</span><span style="margin-right:auto;background:var(--orange);color:#fff;font-size:10px;border-radius:10px;padding:1px 8px;">${h.zones.length} زون</span><button class="btn btn-sm" style="background:#f8d7da;color:var(--red);border:none;font-size:10px;" onclick="delHall(${h.id})">حذف</button></div>`).join('');
+}
+async function delHall(id) {
+  if(!confirm('این سالن حذف شود؟')) return;
+  DB.halls=DB.halls.filter(h=>h.id!==id);
+  DB.machines=DB.machines.filter(m=>m.hallId!==id);
+  renderHalls(); renderMachines(); fillMHalls(); fillRqHalls();
+  await saveDB(); toast('سالن حذف شد','warn');
+}
+
+// ── MACHINES ──
+function fillMHalls() {
+  const s=document.getElementById('m-hall'); if(!s) return;
+  s.innerHTML='<option value="">انتخاب...</option>'+DB.halls.map(h=>`<option value="${h.id}">سالن ${h.num}</option>`).join('');
+}
+function mFillZone() {
+  const hId=parseInt(document.getElementById('m-hall').value);
+  const h=DB.halls.find(h=>h.id===hId);
+  document.getElementById('m-zone').innerHTML=h?h.zones.map(z=>`<option value="${z.id}">زون ${z.num}</option>`).join(''):'<option value="">ابتدا سالن</option>';
+}
+async function addMachine() {
+  const hId=parseInt(document.getElementById('m-hall').value);
+  const zId=parseInt(document.getElementById('m-zone').value);
+  const code=document.getElementById('m-code').value.trim();
+  const model=document.getElementById('m-model').value.trim();
+  const floors=parseInt(document.getElementById('m-floors').value)||1;
+  const eyes=parseInt(document.getElementById('m-eyes').value);
+  const dafDays=parseInt(document.getElementById('m-daf').value)||7;
+  if(!hId||!code||!eyes){toast('سالن، کد و چشمه الزامی','err');return;}
+  if(DB.machines.find(m=>m.code===code)){toast('این کد قبلاً ثبت شده','err');return;}
+  DB.machines.push({id:Date.now(),hallId:hId,zoneId:zId,code,model,floors,eyesPerFloor:eyes,dafDays});
+  document.getElementById('m-code').value=''; document.getElementById('m-model').value=''; document.getElementById('m-eyes').value='';
+  renderMachines(); renderHalls(); fillRqHalls();
+  await saveDB(); toast(`دستگاه ${code} ثبت شد`,'ok');
+}
+function renderMachines() {
+  const b=document.getElementById('m-tbody');
+  document.getElementById('m-count').textContent=DB.machines.length;
+  if(!DB.machines.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
+  b.innerHTML=DB.machines.map(m=>{
+    const h=DB.halls.find(h=>h.id===m.hallId); const z=h?.zones.find(z=>z.id===m.zoneId);
+    return `<tr><td><strong>${m.code}</strong></td><td>س${h?.num||'?'}/ز${z?.num||'?'}</td><td>${m.floors}</td><td>${m.eyesPerFloor}</td><td>${m.dafDays}</td><td><button class="btn btn-sm" style="background:#f8d7da;color:var(--red);border:none;font-size:10px;" onclick="delMachine(${m.id})">حذف</button></td></tr>`;
+  }).join('');
+}
+async function delMachine(id) {
+  if(!confirm('این دستگاه حذف شود؟')) return;
+  DB.machines=DB.machines.filter(m=>m.id!==id);
+  renderMachines(); await saveDB(); toast('دستگاه حذف شد','warn');
+}
+
+// ── TECHNICIANS ──
+async function addTech() {
+  const name=document.getElementById('t-name').value.trim();
+  const user=document.getElementById('t-user').value.trim();
+  const spec=document.getElementById('t-spec').value;
+  if(!name||!user){toast('نام و کاربری الزامی','err');return;}
+  if(DB.technicians.find(t=>t.username===user)){toast('این کاربری قبلاً ثبت شده','err');return;}
+  DB.technicians.push({id:Date.now(),name,username:user,specialty:spec,repairCount:0,approvedCount:0});
+  document.getElementById('t-name').value=''; document.getElementById('t-user').value='';
+  renderTechs(); await saveDB(); toast(`${name} ثبت شد`,'ok');
+}
+function renderTechs() {
+  const b=document.getElementById('t-tbody');
+  document.getElementById('t-count').textContent=DB.technicians.length+' نفر';
+  if(!DB.technicians.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
+  b.innerHTML=DB.technicians.map(t=>`<tr><td>${t.name}</td><td style="font-size:12px;color:var(--gray);">${t.username}</td><td>${t.specialty}</td><td>${t.repairCount}</td><td>${t.repairCount?Math.round(t.approvedCount/t.repairCount*100)+'%':'—'}</td><td><button class="btn btn-sm" style="background:#f8d7da;color:var(--red);border:none;font-size:10px;" onclick="delTech(${t.id})">حذف</button></td></tr>`).join('');
+}
+async function delTech(id) {
+  if(!confirm('این تعمیرکار حذف شود؟')) return;
+  DB.technicians=DB.technicians.filter(t=>t.id!==id);
+  renderTechs(); await saveDB(); toast('تعمیرکار حذف شد','warn');
+}
+
+// ── FAILURE TYPES ──
+async function addFailure() {
+  const title=document.getElementById('f-title').value.trim();
+  const cat=document.getElementById('f-cat').value;
+  const desc=document.getElementById('f-desc').value.trim();
+  if(!title){toast('عنوان الزامی','err');return;}
+  if(DB.failureTypes.find(f=>f.title===title)){toast('قبلاً ثبت شده','err');return;}
+  DB.failureTypes.push({id:Date.now(),title,category:cat,desc,usageCount:0});
+  document.getElementById('f-title').value=''; document.getElementById('f-desc').value='';
+  renderFailures(); fillRqFt();
+  await saveDB(); toast(`"${title}" ثبت شد`,'ok');
+}
+function renderFailures() {
+  const b=document.getElementById('f-tbody');
+  if(!DB.failureTypes.length){b.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
+  b.innerHTML=DB.failureTypes.map(f=>`<tr><td><strong>${f.title}</strong></td><td><span class="badge b-gray">${f.category}</span></td><td>${f.usageCount}</td><td><button class="btn btn-sm" style="background:#f8d7da;color:var(--red);border:none;font-size:10px;" onclick="delFailure(${f.id})">حذف</button></td></tr>`).join('');
+}
+async function delFailure(id) {
+  if(!confirm('این نوع خرابی حذف شود؟')) return;
+  DB.failureTypes=DB.failureTypes.filter(f=>f.id!==id);
+  renderFailures(); fillRqFt(); await saveDB(); toast('حذف شد','warn');
+}
+
+// ── REQUEST FORM ──
+function fillRqHalls() {
+  const s=document.getElementById('rq-hall'); if(!s) return;
+  s.innerHTML='<option value="">انتخاب...</option>'+DB.halls.map(h=>`<option value="${h.id}">سالن ${h.num}</option>`).join('');
+}
+function fillRqFt() {
+  const s=document.getElementById('rq-ft'); if(!s) return;
+  s.innerHTML='<option value="">انتخاب...</option>'+DB.failureTypes.map(f=>`<option value="${f.id}">${f.title}</option>`).join('');
+}
+function rqZone() {
+  const hId=parseInt(document.getElementById('rq-hall').value);
+  const h=DB.halls.find(h=>h.id===hId);
+  document.getElementById('rq-zone').innerHTML=h?h.zones.map(z=>`<option value="${z.id}">زون ${z.num}</option>`).join(''):'<option value="">ابتدا سالن</option>';
+  rqMachine();
+}
+function rqMachine() {
+  const hId=parseInt(document.getElementById('rq-hall').value);
+  const zId=parseInt(document.getElementById('rq-zone').value);
+  const ms=DB.machines.filter(m=>m.hallId===hId&&(!zId||m.zoneId===zId));
+  document.getElementById('rq-machine').innerHTML='<option value="">انتخاب...</option>'+ms.map(m=>`<option value="${m.id}">${m.code}${m.model?' — '+m.model:''}</option>`).join('');
+  rqFloor();
+}
+function rqFloor() {
+  const mId=parseInt(document.getElementById('rq-machine').value);
+  const m=DB.machines.find(m=>m.id===mId);
+  document.getElementById('rq-floor').innerHTML=m?Array.from({length:m.floors},(_,i)=>`<option value="${i+1}">طبقه ${i+1}</option>`).join(''):'<option value="">ابتدا دستگاه</option>';
+}
+function initReqForm() {
+  fillRqHalls(); fillRqFt();
+  rStep(0);
+}
+function rStep(n) {
+  if(n===1){
+    if(!document.getElementById('rq-machine').value||!document.getElementById('rq-eye').value||!document.getElementById('rq-daf').value){toast('دستگاه، چشمه و داف الزامی','err');return;}
+  }
+  if(n===2){
+    if(!document.getElementById('rq-ft').value){toast('نوع خرابی الزامی','err');return;}
+    buildPreview();
+  }
+  document.querySelectorAll('.step-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  [0,1,2].forEach(i=>document.getElementById('rs'+i).style.display=i===n?'':'none');
+}
+function buildPreview() {
+  const hId=parseInt(document.getElementById('rq-hall').value);
+  const zId=parseInt(document.getElementById('rq-zone').value);
+  const mId=parseInt(document.getElementById('rq-machine').value);
+  const floor=document.getElementById('rq-floor').value;
+  const eye=document.getElementById('rq-eye').value;
+  const daf=document.getElementById('rq-daf').value;
+  const ftId=parseInt(document.getElementById('rq-ft').value);
+  const prio=document.getElementById('rq-prio').value;
+  const desc=document.getElementById('rq-desc').value;
+  const unit=document.getElementById('rq-unit').value;
+  const h=DB.halls.find(h=>h.id===hId); const z=h?.zones.find(z=>z.id===zId);
+  const m=DB.machines.find(m=>m.id===mId); const ft=DB.failureTypes.find(f=>f.id===ftId);
+  const prioL={normal:'عادی',urgent:'فوری',critical:'🔴 بحرانی'}[prio]||prio;
+  document.getElementById('rq-prev').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:13px;">
+    <div><span style="color:var(--gray)">واحد: </span><strong>${unit}</strong></div>
+    <div><span style="color:var(--gray)">لوکیشن: </span><strong>سالن ${h?.num||'?'} › زون ${z?.num||'?'} › ${m?.code||'?'}</strong></div>
+    <div><span style="color:var(--gray)">طبقه/چشمه: </span><strong>طبقه ${floor} / چشمه ${eye}</strong></div>
+    <div><span style="color:var(--gray)">شماره داف: </span><strong style="background:var(--navy);color:#fff;border-radius:4px;padding:1px 8px;font-size:11px;">داف ${daf}</strong></div>
+    <div><span style="color:var(--gray)">خرابی: </span><strong>${ft?.title||'?'}</strong></div>
+    <div><span style="color:var(--gray)">اهمیت: </span><strong>${prioL}</strong></div>
+    ${desc?`<div style="grid-column:1/-1;"><span style="color:var(--gray)">توضیح: </span>${desc}</div>`:''}
+  </div>`;
+  // check repeat
+  const prev=DB.requests.filter(r=>r.machineId===mId&&r.failureTypeId===ftId);
+  const prevDafs=prev.map(r=>parseInt(r.dafNum)).filter(Boolean).sort((a,b)=>a-b);
+  const cur=parseInt(daf);
+  const w=document.getElementById('rq-warn');
+  if(prevDafs.includes(cur-1)||prevDafs.includes(cur)){
+    w.style.display='flex';
+    document.getElementById('rq-warn-msg').textContent=`دستگاه ${m?.code||''} قبلاً "${ft?.title||''}" را در داف‌های ${prevDafs.join('، ')} داشته.`;
+  } else { w.style.display='none'; }
+}
+async function submitReq() {
+  const hId=parseInt(document.getElementById('rq-hall').value);
+  const zId=parseInt(document.getElementById('rq-zone').value);
+  const mId=parseInt(document.getElementById('rq-machine').value);
+  const floor=document.getElementById('rq-floor').value;
+  const eye=document.getElementById('rq-eye').value;
+  const daf=document.getElementById('rq-daf').value;
+  const ftId=parseInt(document.getElementById('rq-ft').value);
+  const prio=document.getElementById('rq-prio').value;
+  const desc=document.getElementById('rq-desc').value;
+  const unit=document.getElementById('rq-unit').value;
+  const h=DB.halls.find(h=>h.id===hId); const z=h?.zones.find(z=>z.id===zId);
+  const m=DB.machines.find(m=>m.id===mId); const ft=DB.failureTypes.find(f=>f.id===ftId);
+  if(ft) ft.usageCount++;
+  DB.requests.push({id:DB._rId++,unit,hallId:hId,zoneId:zId,machineId:mId,floor,eyeNum:eye,dafNum:daf,failureTypeId:ftId,priority:prio,description:desc,status:'pending',createdAt:new Date().toLocaleTimeString('fa'),hallNum:h?.num,zoneNum:z?.num,machineCode:m?.code,failureTitle:ft?.title});
+  initReqForm(); renderDash(); updateBadges(); renderFailures();
+  await saveDB(); toast('درخواست ثبت شد ✓','ok');
+}
+
+// ── DASHBOARD ──
+function renderDash() {
+  const rows=DB.requests.slice(-10).reverse();
+  const b=document.getElementById('dash-tbody');
+  if(!rows.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1.5rem;">هنوز درخواستی ثبت نشده</td></tr>';}
+  else b.innerHTML=rows.map(r=>{
+    const st={pending:'<span class="badge b-pend">در انتظار</span>',assigned:'<span class="badge b-asgn">تخصیص یافت</span>',reported:'<span class="badge b-pend">گزارش داده</span>',approved:'<span class="badge b-done">تایید ✓</span>',rejected:'<span class="badge b-rep">رد شد</span>'}[r.status]||r.status;
+    return `<tr><td>${fid(r.id)}</td><td>سالن ${r.hallNum||'?'} › زون ${r.zoneNum||'?'} › ${r.machineCode||'?'}</td><td>ط${r.floor}/چ${r.eyeNum}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r.dafNum}</span></td><td>${r.failureTitle||'?'}</td><td>${st}</td></tr>`;
+  }).join('');
+  const reps=detectRepeats();
+  const rp=document.getElementById('rep-panel'); const ra=document.getElementById('rep-alerts');
+  if(reps.length){ rp.style.display=''; ra.innerHTML=reps.map(r=>`<div class="rep-alert"><span style="font-size:18px;">⚠️</span><div><div style="font-weight:700;color:var(--red);font-size:13px;">دستگاه ${r.machine} — ${r.failure}</div><div style="font-size:12px;color:var(--gray);">داف‌های ${r.dafs.join('، ')} (${r.count} بار متوالی)</div></div></div>`).join('');}
+  else rp.style.display='none';
+  updateBadges();
+}
+
+// ── WORK ORDERS ──
+function renderWO() {
+  const pending=DB.requests.filter(r=>r.status==='pending');
+  const c=document.getElementById('wo-pending');
+  if(!pending.length){c.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">درخواستی در انتظار تخصیص نیست</div>';}
+  else c.innerHTML=pending.map(r=>`<div style="background:var(--cream2);border-radius:10px;padding:.7rem .9rem;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <strong style="font-size:13px;">${fid(r.id)}</strong>
+    <span style="font-size:13px;">${r.machineCode||'?'} › ط${r.floor} › چ${r.eyeNum}</span>
+    <span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r.dafNum}</span>
+    <span class="badge b-gray">${r.failureTitle||'?'}</span>
+    <span style="font-size:12px;color:var(--gray);">${r.unit}</span>
+    <button class="btn btn-p btn-sm" style="margin-right:auto;" onclick="openAssign(${r.id})">تخصیص تعمیرکار</button>
+  </div>`).join('');
+  const b=document.getElementById('wo-tbody');
+  if(!DB.workOrders.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
+  b.innerHTML=DB.workOrders.map(w=>{
+    const r=DB.requests.find(x=>x.id===w.requestId); const t=DB.technicians.find(x=>x.id===w.techId);
+    const st={assigned:'<span class="badge b-asgn">در جریان</span>',reported:'<span class="badge b-pend">گزارش داده</span>',approved:'<span class="badge b-done">تایید شد</span>',rejected:'<span class="badge b-rep">رد شد</span>'}[w.status]||w.status;
+    return `<tr><td>${fid(w.id)}</td><td>${r?.machineCode||'?'}/چ${r?.eyeNum||'?'}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r?.dafNum||'?'}</span></td><td>${r?.failureTitle||'?'}</td><td>${t?.name||'?'}</td><td>${st}</td></tr>`;
+  }).join('');
+}
+function openAssign(rid) {
+  _assignReqId=rid;
+  const r=DB.requests.find(x=>x.id===rid);
+  document.getElementById('assign-info').textContent=`${fid(rid)} | ${r?.machineCode||'?'} › چ${r?.eyeNum||'?'} | ${r?.failureTitle||'?'}`;
+  document.getElementById('assign-tech').innerHTML='<option value="">انتخاب...</option>'+DB.technicians.map(t=>`<option value="${t.id}">${t.name} — ${t.specialty}</option>`).join('');
+  document.getElementById('modal-assign').classList.add('show');
+}
+async function doAssign() {
+  const tId=parseInt(document.getElementById('assign-tech').value);
+  const s=document.getElementById('asgn-s').value; const e=document.getElementById('asgn-e').value;
+  if(!tId){toast('تعمیرکار انتخاب نشده','err');return;}
+  DB.workOrders.push({id:DB._wId++,requestId:_assignReqId,techId:tId,startPlan:s,endPlan:e,status:'assigned'});
+  const r=DB.requests.find(x=>x.id===_assignReqId); if(r) r.status='assigned';
+  closeModal('modal-assign'); renderWO(); renderDash(); updateBadges();
+  const t=DB.technicians.find(x=>x.id===tId);
+  await saveDB(); toast(`به ${t?.name||''} تخصیص یافت`,'ok');
+}
+
+// ── REPORT ──
+function renderRepForm() {
+  const wos=DB.workOrders.filter(w=>w.status==='assigned');
+  const s=document.getElementById('rep-wo');
+  s.innerHTML='<option value="">انتخاب...</option>'+wos.map(w=>{
+    const r=DB.requests.find(x=>x.id===w.requestId); const t=DB.technicians.find(x=>x.id===w.techId);
+    return `<option value="${w.id}">${fid(w.id)} | ${r?.machineCode||'?'} › چ${r?.eyeNum||'?'} | ${t?.name||'?'}</option>`;
+  }).join('');
+}
+function repWoChange() {
+  const wId=parseInt(document.getElementById('rep-wo').value);
+  const w=DB.workOrders.find(x=>x.id===wId);
+  const info=document.getElementById('rep-info');
+  if(w){const r=DB.requests.find(x=>x.id===w.requestId);const t=DB.technicians.find(x=>x.id===w.techId);info.style.display='';info.innerHTML=`<strong>تعمیرکار:</strong> ${t?.name||'?'} | <strong>دستگاه:</strong> ${r?.machineCode||'?'} | <strong>خرابی:</strong> ${r?.failureTitle||'?'} | <strong>داف:</strong> ${r?.dafNum||'?'}`;}
+  else info.style.display='none';
+}
+function addPart() {
+  const d=document.createElement('div');
+  d.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;align-items:center;';
+  d.innerHTML=`<input class="fi part-name" placeholder="نام قطعه"><input class="fi part-qty" type="number" placeholder="تعداد" min="1" value="1"><input class="fi part-unit" placeholder="واحد"><button class="btn btn-d btn-sm" style="font-size:12px;padding:.28rem .5rem;" onclick="this.parentNode.remove()">✕</button>`;
+  document.getElementById('parts-list').appendChild(d);
+}
+async function submitReport() {
+  const wId=parseInt(document.getElementById('rep-wo').value);
+  const s=document.getElementById('rep-s').value; const e=document.getElementById('rep-e').value;
+  const desc=document.getElementById('rep-desc').value.trim();
+  const wh=document.getElementById('rep-wh').value;
+  if(!wId){toast('کار را انتخاب کنید','err');return;}
+  if(!desc){toast('شرح تعمیر الزامی','err');return;}
+  const parts=[];
+  document.querySelectorAll('#parts-list > div').forEach(row=>{
+    const n=row.querySelector('.part-name')?.value.trim(); const q=row.querySelector('.part-qty')?.value; const u=row.querySelector('.part-unit')?.value.trim();
+    if(n) parts.push({name:n,qty:q,unit:u});
+  });
+  const w=DB.workOrders.find(x=>x.id===wId); if(!w){toast('کار یافت نشد','err');return;}
+  w.status='reported';
+  const r=DB.requests.find(x=>x.id===w.requestId); if(r) r.status='reported';
+  DB.repairReports.push({id:DB._pId++,woId:wId,startTime:s,endTime:e,description:desc,parts,warehouse:wh,approved:false,rejected:false});
+  const t=DB.technicians.find(x=>x.id===w.techId); if(t) t.repairCount++;
+  document.getElementById('rep-desc').value=''; document.getElementById('parts-list').innerHTML='';
+  renderRepForm(); renderDash(); updateBadges();
+  await saveDB(); toast('گزارش ثبت شد ✓','ok');
+}
+
+// ── APPROVE ──
+function renderApprove() {
+  const pending=DB.repairReports.filter(r=>!r.approved&&!r.rejected);
+  const l=document.getElementById('ap-list');
+  if(!pending.length){l.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">گزارشی در انتظار نیست</div>';}
+  else l.innerHTML=pending.map(rep=>{
+    const w=DB.workOrders.find(x=>x.id===rep.woId); const r=DB.requests.find(x=>x.id===w?.requestId); const t=DB.technicians.find(x=>x.id===w?.techId);
+    const partsStr=rep.parts.length?rep.parts.map(p=>`${p.name}×${p.qty}`).join('، '):'بدون قطعه';
+    return `<div style="background:var(--cream2);border-radius:10px;padding:.85rem;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:.4rem;flex-wrap:wrap;">
+        <strong>${fid(rep.id)}</strong>
+        <span style="font-size:13px;">${r?.machineCode||'?'} › ط${r?.floor||'?'} › چ${r?.eyeNum||'?'}</span>
+        <span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r?.dafNum||'?'}</span>
+        <span class="badge b-gray">${r?.failureTitle||'?'}</span>
+      </div>
+      <div style="font-size:12px;color:var(--gray);margin-bottom:.3rem;">👷 ${t?.name||'?'} | ⏱ ${rep.startTime}–${rep.endTime} | 🏪 ${rep.warehouse}</div>
+      <div style="font-size:13px;margin-bottom:.3rem;"><strong>شرح:</strong> ${rep.description}</div>
+      <div style="font-size:12px;margin-bottom:.6rem;"><strong>قطعات:</strong> ${partsStr}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-s btn-sm" onclick="doApprove(${rep.id},true)">✓ تایید</button>
+        <button class="btn btn-d btn-sm" onclick="doApprove(${rep.id},false)">✕ رد</button>
+      </div>
+    </div>`;
+  }).join('');
+  const b=document.getElementById('ap-tbody');
+  const done=DB.repairReports.filter(r=>r.approved||r.rejected);
+  if(!done.length){b.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
+  b.innerHTML=done.map(rep=>{
+    const w=DB.workOrders.find(x=>x.id===rep.woId); const r=DB.requests.find(x=>x.id===w?.requestId); const t=DB.technicians.find(x=>x.id===w?.techId);
+    const sh=rep.startTime.split(':').map(Number); const eh=rep.endTime.split(':').map(Number);
+    const dur=(eh[0]*60+eh[1])-(sh[0]*60+sh[1]);
+    return `<tr><td>${fid(rep.id)}</td><td>${r?.machineCode||'?'}/چ${r?.eyeNum||'?'}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r?.dafNum||'?'}</span></td><td>${t?.name||'?'}</td><td>${dur>0?dur+'دقیقه':'—'}</td><td style="font-size:11px;">${rep.parts.map(p=>p.name).join('، ')||'—'}</td><td>${rep.approved?'<span class="badge b-done">✓ تایید</span>':'<span class="badge b-rep">✕ رد</span>'}</td></tr>`;
+  }).join('');
+}
+async function doApprove(repId, approve) {
+  const rep=DB.repairReports.find(x=>x.id===repId); if(!rep) return;
+  rep.approved=approve; rep.rejected=!approve;
+  const w=DB.workOrders.find(x=>x.id===rep.woId); if(w) w.status=approve?'approved':'rejected';
+  const r=DB.requests.find(x=>x.id===w?.requestId); if(r) r.status=approve?'approved':'rejected';
+  const t=DB.technicians.find(x=>x.id===w?.techId); if(t&&approve) t.approvedCount++;
+  renderApprove(); renderDash(); renderTechs(); updateBadges();
+  await saveDB(); toast(approve?'تایید شد ✓':'رد شد', approve?'ok':'err');
+}
+
+// ── REPEATS ──
+function detectRepeats() {
+  const results=[];
+  const mIds=[...new Set(DB.requests.map(r=>r.machineId))];
+  const fIds=[...new Set(DB.requests.map(r=>r.failureTypeId))];
+  mIds.forEach(mid=>{
+    fIds.forEach(fid2=>{
+      const reqs=DB.requests.filter(r=>r.machineId===mid&&r.failureTypeId===fid2);
+      if(reqs.length<2) return;
+      const dafs=reqs.map(r=>parseInt(r.dafNum)).filter(Boolean).sort((a,b)=>a-b);
+      let seq=[dafs[0]], seqs=[];
+      for(let i=1;i<dafs.length;i++){
+        if(dafs[i]===dafs[i-1]+1) seq.push(dafs[i]);
+        else{if(seq.length>=2) seqs.push([...seq]); seq=[dafs[i]];}
+      }
+      if(seq.length>=2) seqs.push(seq);
+      seqs.forEach(s=>{
+        const m=DB.machines.find(x=>x.id===mid); const f=DB.failureTypes.find(x=>x.id===fid2);
+        results.push({machine:m?.code||'?',failure:f?.title||'?',dafs:s,count:s.length});
+      });
+    });
+  });
+  return results;
+}
+function renderRepeats() {
+  const reps=detectRepeats();
+  const l=document.getElementById('rep-list');
+  if(!reps.length){l.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">خرابی تکراری شناسایی نشده</div>';}
+  else l.innerHTML=reps.map(r=>`<div class="rep-alert"><span style="font-size:20px;">⚠️</span><div style="flex:1;"><div style="font-weight:700;color:var(--red);font-size:13px;">دستگاه ${r.machine} — ${r.failure}</div><div style="font-size:12px;color:var(--gray);">داف‌های پشت‌سرهم: ${r.dafs.map(d=>`<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;margin:0 2px;">${d}</span>`).join('')}</div></div><span class="badge b-rep">${r.count} تکرار</span></div>`).join('');
+  const dv=document.getElementById('daf-vis');
+  if(!DB.machines.length){dv.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">دستگاهی ثبت نشده</div>';return;}
+  const machinesWithReqs=DB.machines.filter(m=>DB.requests.some(r=>r.machineId===m.id));
+  if(!machinesWithReqs.length){dv.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">هنوز درخواستی ثبت نشده</div>';return;}
+  dv.innerHTML=machinesWithReqs.map(m=>{
+    const reqs=DB.requests.filter(r=>r.machineId===m.id);
+    const maxDaf=Math.max(...reqs.map(r=>parseInt(r.dafNum)||0),0);
+    const cells=Array.from({length:Math.max(maxDaf,1)},(_,i)=>{
+      const dn=i+1;
+      const dr=reqs.filter(r=>parseInt(r.dafNum)===dn);
+      let cls='daf-ok',icon='';
+      if(dr.length){const ft=DB.failureTypes.find(f=>f.id===dr[0].failureTypeId);
+        if(ft?.category==='مکانیکی'){cls='daf-fail';icon='🔩';}
+        else if(ft?.category==='نخ'){cls='daf-thr';icon='🧵';}
+        else if(ft?.category==='روغن‌کاری'){cls='daf-oil';icon='🛢';}
+        else{cls='daf-fail';icon='⚠';}
+      }
+      return `<div class="daf-cell ${cls}" title="داف ${dn}${dr.length?' — '+dr[0].failureTitle:''}"><div>${dn}</div><div style="font-size:8px;">${icon}</div></div>`;
+    }).join('');
+    return `<div style="margin-bottom:12px;"><div style="font-size:13px;font-weight:600;margin-bottom:4px;">⚙️ دستگاه ${m.code}</div><div style="display:flex;gap:4px;flex-wrap:wrap;">${cells}</div></div>`;
+  }).join('');
+}
+
+// ── ANALYTICS ──
+function renderAnalytics() {
+  document.getElementById('an-tot').textContent=DB.requests.length;
+  document.getElementById('an-rep').textContent=detectRepeats().length;
+  document.getElementById('an-m').textContent=DB.machines.length;
+  document.getElementById('an-t').textContent=DB.technicians.length;
+  const bt=document.getElementById('an-ft');
+  if(!DB.failureTypes.length||!DB.requests.length){bt.innerHTML='<div style="color:var(--gray);font-size:13px;">داده‌ای نیست</div>';}
+  else{const max=Math.max(...DB.failureTypes.map(f=>f.usageCount),1);const clrs=['var(--orange)','var(--red)','var(--yellow)','var(--pink)','var(--navy2)'];
+    bt.innerHTML=DB.failureTypes.map((f,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;border-bottom:1px solid var(--cream2);font-size:13px;"><div style="min-width:90px;color:var(--gray);font-size:12px;">${f.title}</div><div style="flex:1;background:var(--cream2);border-radius:4px;height:14px;overflow:hidden;"><div style="width:${Math.round(f.usageCount/max*100)}%;height:100%;border-radius:4px;background:${clrs[i%clrs.length]};"></div></div><div style="font-size:12px;font-weight:700;color:var(--navy);min-width:20px;">${f.usageCount}</div></div>`).join('');}
+  const btech=document.getElementById('an-tech');
+  const active=DB.technicians.filter(t=>t.repairCount>0);
+  if(!active.length){btech.innerHTML='<div style="color:var(--gray);font-size:13px;">هنوز تعمیری انجام نشده</div>';return;}
+  btech.innerHTML=active.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;border-bottom:1px solid var(--cream2);font-size:13px;"><div style="min-width:80px;color:var(--gray);font-size:12px;">${t.name.split(' ')[0]}</div><div>${t.repairCount} تعمیر</div><div style="margin-right:auto;"><span class="badge b-done">${Math.round(t.approvedCount/t.repairCount*100)}%</span></div></div>`).join('');
+}
+
+
+// ══ EXCEL IMPORT ══
+let xlWb=null,xlCurSheet='',xlSheetData=[],xlHeaders=[];
+const DTYPE_FIELDS={
+  halls:['num','desc','zones'],
+  machines:['code','model','hallNum','zoneNum','floors','eyesPerFloor','dafDays'],
+  technicians:['name','username','specialty'],
+  failureTypes:['title','category','desc'],
+  requests:['unit','machineCode','floor','eyeNum','dafNum','failureTitle','priority','description']
+};
+const DTYPE_LABELS={halls:'سالن‌ها',machines:'دستگاه‌ها',technicians:'تعمیرکاران',failureTypes:'انواع خرابی',requests:'درخواست‌ها'};
+function xlEv(e,cls){e.preventDefault();document.getElementById('xl-drop').className='drop-zone '+cls;}
+function xlDrop(e){e.preventDefault();document.getElementById('xl-drop').className='drop-zone';xlLoad(e.dataTransfer.files[0]);}
+function xlLoad(file){
+  if(!file) return;
+  document.getElementById('xl-fname').textContent=file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{xlWb=XLSX.read(e.target.result,{type:'array'});buildXlTabs();xlGoStep(1);toast('فایل بارگذاری شد','ok');}
+    catch{toast('خطا در خواندن فایل','err');}
+  };
+  reader.readAsArrayBuffer(file);
+}
+function buildXlTabs(){
+  const c=document.getElementById('xl-tabs');
+  c.innerHTML=xlWb.SheetNames.map(n=>`<button class="xtab" onclick="xlSelectSheet('${n}',this)">${n}</button>`).join('');
+  const first=c.querySelector('.xtab');
+  if(first) xlSelectSheet(xlWb.SheetNames[0],first);
+}
+function xlSelectSheet(name,el){
+  xlCurSheet=name;
+  document.querySelectorAll('.xtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const ws=xlWb.Sheets[name];
+  xlSheetData=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  if(!xlSheetData.length){toast('این شیت خالی است','err');return;}
+  xlHeaders=xlSheetData[0].map(String);
+  const tbl=document.getElementById('xl-preview');
+  const rows=xlSheetData.slice(0,7);
+  tbl.innerHTML='<thead><tr>'+xlHeaders.map(h=>`<th>${h}</th>`).join('')+'</tr></thead>'+
+    '<tbody>'+rows.slice(1).map(r=>'<tr>'+xlHeaders.map((_,i)=>`<td>${r[i]??''}</td>`).join('')+'</tr>').join('')+'</tbody>';
+  document.getElementById('xl-rowcount').textContent=`${xlSheetData.length-1} ردیف، ${xlHeaders.length} ستون`;
+  document.getElementById('xl-preview-wrap').style.display='';
+  const sn=name.toLowerCase();
+  const sel=document.getElementById('xl-dtype');
+  if(sn.includes('سالن')||sn.includes('hall')) sel.value='halls';
+  else if(sn.includes('دستگاه')||sn.includes('machine')) sel.value='machines';
+  else if(sn.includes('تعمیر')||sn.includes('tech')) sel.value='technicians';
+  else if(sn.includes('خرابی')||sn.includes('fail')) sel.value='failureTypes';
+  else if(sn.includes('درخواست')||sn.includes('req')) sel.value='requests';
+}
+function buildXlColMap(){
+  const dtype=document.getElementById('xl-dtype').value;
+  const fields=DTYPE_FIELDS[dtype]||[];
+  const c=document.getElementById('xl-colmap');
+  c.innerHTML=fields.map(f=>{
+    const matched=xlHeaders.findIndex(h=>h===f||h.toLowerCase().replace(/_/g,'').includes(f.toLowerCase().slice(0,4)));
+    return `<div class="col-item">
+      <span style="min-width:110px;font-size:11px;color:var(--navy);font-weight:600;">${f}</span>
+      <span style="color:var(--gray2);">←</span>
+      <select class="fs" id="xm-${f}">
+        <option value="">— نادیده بگیر —</option>
+        ${xlHeaders.map((h,i)=>`<option value="${i}" ${i===matched?'selected':''}>${h}</option>`).join('')}
+      </select>
+    </div>`;
+  }).join('');
+}
+function xlGoStep(n){
+  [0,1,2,3].forEach(i=>{
+    const s=document.getElementById('xs'+i); if(s) s.style.display=i===n?'':'none';
+    const st=document.getElementById('xst'+i); if(st) st.className='xstep'+(i<n?' done':i===n?' active':'');
+  });
+  if(n===2) buildXlColMap();
+}
+async function xlImport(){
+  const dtype=document.getElementById('xl-dtype').value;
+  const dup=document.getElementById('xl-dup').value;
+  const fields=DTYPE_FIELDS[dtype]||[];
+  const rows=xlSheetData.slice(1).filter(r=>r.some(c=>c!==''));
+  const colMap={};
+  fields.forEach(f=>{const v=document.getElementById('xm-'+f)?.value; colMap[f]=(v!=null&&v!=='')?parseInt(v):null;});
+  let added=0,skipped=0;
+  rows.forEach(row=>{
+    const get=(f)=>colMap[f]!=null?String(row[colMap[f]]??'').trim():'';
+    if(dtype==='halls'){
+      const num=get('num'); if(!num) return;
+      if(DB.halls.find(h=>h.num===num)){if(dup==='skip'){skipped++;return;} DB.halls=DB.halls.filter(h=>h.num!==num);}
+      const zones=parseInt(get('zones'))||1;
+      DB.halls.push({id:Date.now()+Math.random(),num,desc:get('desc'),zones:Array.from({length:zones},(_,i)=>({id:Date.now()+Math.random(),num:String(i+1)}))});
+      added++;
+    } else if(dtype==='machines'){
+      const code=get('code'); if(!code) return;
+      if(DB.machines.find(m=>m.code===code)){if(dup==='skip'){skipped++;return;} DB.machines=DB.machines.filter(m=>m.code!==code);}
+      const h=DB.halls.find(h=>h.num===get('hallNum'));
+      const z=h?.zones.find(z=>z.num===get('zoneNum'));
+      DB.machines.push({id:Date.now()+Math.random(),hallId:h?.id||0,zoneId:z?.id||0,code,model:get('model'),floors:parseInt(get('floors'))||1,eyesPerFloor:parseInt(get('eyesPerFloor'))||100,dafDays:parseInt(get('dafDays'))||7});
+      added++;
+    } else if(dtype==='technicians'){
+      const name=get('name'); const user=get('username')||name; if(!name) return;
+      if(DB.technicians.find(t=>t.username===user)){if(dup==='skip'){skipped++;return;} DB.technicians=DB.technicians.filter(t=>t.username!==user);}
+      DB.technicians.push({id:Date.now()+Math.random(),name,username:user,specialty:get('specialty')||'عمومی',repairCount:0,approvedCount:0});
+      added++;
+    } else if(dtype==='failureTypes'){
+      const title=get('title'); if(!title) return;
+      if(DB.failureTypes.find(f=>f.title===title)){if(dup==='skip'){skipped++;return;} DB.failureTypes=DB.failureTypes.filter(f=>f.title!==title);}
+      DB.failureTypes.push({id:Date.now()+Math.random(),title,category:get('category')||'سایر',desc:get('desc'),usageCount:0});
+      added++;
+    } else if(dtype==='requests'){
+      const machineCode=get('machineCode'); const eyeNum=get('eyeNum'); if(!machineCode||!eyeNum) return;
+      const m=DB.machines.find(x=>x.code===machineCode);
+      const ft=DB.failureTypes.find(x=>x.title===get('failureTitle'));
+      const h=DB.halls.find(x=>x.id===m?.hallId);
+      const z=h?.zones.find(x=>x.id===m?.zoneId);
+      DB.requests.push({id:DB._rId++,unit:get('unit')||'نامشخص',hallId:m?.hallId||0,zoneId:m?.zoneId||0,machineId:m?.id||0,floor:get('floor')||'1',eyeNum,dafNum:get('dafNum')||'1',failureTypeId:ft?.id||0,priority:get('priority')||'normal',description:get('description'),status:'pending',createdAt:new Date().toLocaleTimeString('fa'),hallNum:h?.num,zoneNum:z?.num,machineCode,failureTitle:get('failureTitle')});
+      if(ft) ft.usageCount++;
+      added++;
+    }
+  });
+  await saveDB(); renderAll();
+  document.getElementById('xl-result').innerHTML=`<strong>${added}</strong> ردیف وارد شد به <strong>${DTYPE_LABELS[dtype]}</strong>${skipped?` | <strong>${skipped}</strong> ردیف نادیده گرفته شد`:''}`;
+  xlGoStep(3);
+  toast(`${added} ردیف import شد`,'ok');
+}
+function downloadTemplate(){
+  const wb2=XLSX.utils.book_new();
+  const sheets=[
+    {name:'سالن‌ها',data:[['num','desc','zones'],['1','سالن ریسندگی اصلی','3'],['2','سالن پلی‌استر','2']]},
+    {name:'دستگاه‌ها',data:[['code','model','hallNum','zoneNum','floors','eyesPerFloor','dafDays'],['12A','Murata 21C','1','1','2','120','7'],['ICB3','Barmag CW800','2','1','2','144','6'],['33','Barmag CW900','2','1','2','144','6']]},
+    {name:'تعمیرکاران',data:[['name','username','specialty'],['احمد محمدی','ahmadi_t','مکانیک'],['محسن کریمی','karimi_t','برق']]},
+    {name:'انواع_خرابی',data:[['title','category','desc'],['خرابی پیچ','مکانیکی','شل یا شکستن پیچ'],['روغن‌ریزی','روغن‌کاری','نشتی روانکاری'],['پارگی نخ','نخ','پارگی در حین تولید']]},
+    {name:'درخواست‌ها',data:[['unit','machineCode','floor','eyeNum','dafNum','failureTitle','priority','description'],['کنترل کیفیت','33','1','97','1','روغن‌ریزی','urgent','روغن‌ریزی شدید'],['تضمین کیفیت','12A','2','14','3','خرابی پیچ','normal','پیچ شل شده']]},
+  ];
+  sheets.forEach(s=>{const ws=XLSX.utils.aoa_to_sheet(s.data);ws['!cols']=s.data[0].map(()=>({wch:18}));XLSX.utils.book_append_sheet(wb2,ws,s.name);});
+  XLSX.writeFile(wb2,'atrin_nakh_template.xlsx');
+  toast('فایل نمونه دانلود شد','ok');
+}
+
+// ── INIT ──
+loadDB();
 </script>
+
 </body>
 </html>
