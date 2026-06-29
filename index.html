@@ -388,7 +388,7 @@ body{direction:rtl;font-family:var(--font);background:var(--cream);color:var(--n
         <div class="xstep" id="xst3">۴. نتیجه</div>
       </div>
       <div id="xs0">
-        <div class="drop-zone" id="xl-drop" onclick="document.getElementById('xl-file').click()" ondragover="xlEv(event,'drag')" ondragleave="xlEv(event,'')" ondrop="xlDrop(event)">
+        <div class="drop-zone" id="xl-drop" onclick="document.getElementById('xl-file').click()" id="xl-dropzone" ondragover="xlEv(event,'drag')" ondragleave="xlEv(event,'')" ondrop="xlDrop(event)">
           <div class="drop-icon">📊</div>
           <div class="drop-text">فایل Excel را اینجا بکش یا کلیک کن</div>
           <div class="drop-sub">پشتیبانی: .xlsx  .xls  .csv</div>
@@ -442,9 +442,24 @@ body{direction:rtl;font-family:var(--font);background:var(--cream);color:var(--n
           <div style="font-weight:700;color:#155724;font-size:14px;margin-bottom:4px;">✅ Import انجام شد!</div>
           <div style="font-size:13px;color:#155724;" id="xl-result"></div>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-p" onclick="xlGoStep(0)">Import شیت دیگری</button>
-          <button class="btn btn-g" onclick="nav('dashboard',null)">برو به داشبورد</button>
+        <div style="background:var(--cream2);border-radius:8px;padding:.75rem;margin-bottom:.85rem;font-size:12px;">
+          <div style="font-weight:700;color:var(--navy);margin-bottom:6px;">📋 ترتیب صحیح Import:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="import-steps-indicator">
+            <span id="imp-1" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">① سالن‌ها</span>
+            <span style="color:var(--gray);">→</span>
+            <span id="imp-2" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">② دستگاه‌ها</span>
+            <span style="color:var(--gray);">→</span>
+            <span id="imp-3" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">③ تعمیرکاران</span>
+            <span style="color:var(--gray);">→</span>
+            <span id="imp-4" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">④ انواع خرابی</span>
+            <span style="color:var(--gray);">→</span>
+            <span id="imp-5" style="padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;">⑤ درخواست‌ها</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-p" onclick="xlResetForNext()">📊 Import شیت بعدی (همین فایل)</button>
+          <button class="btn btn-g btn-sm" onclick="xlFullReset()">📁 آپلود فایل جدید</button>
+          <button class="btn btn-g btn-sm" onclick="nav('dashboard',null)">📊 برو به داشبورد</button>
         </div>
       </div>
     </div>
@@ -492,7 +507,30 @@ async function loadDB() {
       setSaveStatus('loaded');
     } else { setSaveStatus('empty'); }
   } catch(e) { setSaveStatus('empty'); }
+  migrateMachines();
   renderAll();
+}
+// دستگاه‌های قبلاً import شده که hallNum ندارن رو درست می‌کنه
+function migrateMachines() {
+  let changed = false;
+  DB.machines.forEach(m => {
+    if(!m.hallNum) {
+      const h = DB.halls.find(h =>
+        String(h.id)===String(m.hallId) ||
+        Number(h.id)===Number(m.hallId)
+      );
+      if(h) { m.hallNum = String(h.num); changed = true; }
+    }
+    if(!m.zoneNum) {
+      const h = DB.halls.find(h => String(h.num)===String(m.hallNum));
+      const z = h?.zones.find(z =>
+        String(z.id)===String(m.zoneId) ||
+        Number(z.id)===Number(m.zoneId)
+      );
+      if(z) { m.zoneNum = String(z.num); changed = true; }
+    }
+  });
+  if(changed) saveDB();
 }
 function setSaveStatus(s) {
   const dot = document.getElementById('save-dot');
@@ -602,11 +640,11 @@ async function delHall(id) {
 // ── MACHINES ──
 function fillMHalls() {
   const s=document.getElementById('m-hall'); if(!s) return;
-  s.innerHTML='<option value="">انتخاب...</option>'+DB.halls.map(h=>`<option value="${h.id}">سالن ${h.num}</option>`).join('');
+  s.innerHTML='<option value="">انتخاب...</option>'+DB.halls.map(h=>`<option value="${h.num}">${h.desc?h.desc+' ('+h.num+')':'سالن '+h.num}</option>`).join('');
 }
 function mFillZone() {
   const hId=parseInt(document.getElementById('m-hall').value);
-  const h=DB.halls.find(h=>h.id===hId);
+  const h=DB.halls.find(h=>String(h.id)===String(hId)||Number(h.id)===Number(hId));
   document.getElementById('m-zone').innerHTML=h?h.zones.map(z=>`<option value="${z.id}">زون ${z.num}</option>`).join(''):'<option value="">ابتدا سالن</option>';
 }
 async function addMachine() {
@@ -629,8 +667,9 @@ function renderMachines() {
   document.getElementById('m-count').textContent=DB.machines.length;
   if(!DB.machines.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
   b.innerHTML=DB.machines.map(m=>{
-    const h=DB.halls.find(h=>h.id===m.hallId); const z=h?.zones.find(z=>z.id===m.zoneId);
-    return `<tr><td><strong>${m.code}</strong></td><td>س${h?.num||'?'}/ز${z?.num||'?'}</td><td>${m.floors}</td><td>${m.eyesPerFloor}</td><td>${m.dafDays}</td><td><button class="btn btn-sm" style="background:#f8d7da;color:var(--red);border:none;font-size:10px;" onclick="delMachine(${m.id})">حذف</button></td></tr>`;
+    const h=DB.halls.find(h=>String(h.id)===String(m.hallId)||h.num===m.hallNum); 
+    const z=h?.zones.find(z=>String(z.id)===String(m.zoneId)||z.num===m.zoneNum);
+    return `<tr><td><strong>${m.code}</strong></td><td>س${m.hallNum||h?.num||'?'}/ز${m.zoneNum||z?.num||'?'}</td><td>${m.floors}</td><td>${m.eyesPerFloor}</td><td>${m.dafDays}</td><td><button class="btn btn-sm" style="background:#f8d7da;color:var(--red);border:none;font-size:10px;" onclick="delMachine(${m.id})">حذف</button></td></tr>`;
   }).join('');
 }
 async function delMachine(id) {
@@ -688,33 +727,47 @@ async function delFailure(id) {
 // ── REQUEST FORM ──
 function fillRqHalls() {
   const s=document.getElementById('rq-hall'); if(!s) return;
-  s.innerHTML='<option value="">انتخاب...</option>'+DB.halls.map(h=>`<option value="${h.id}">سالن ${h.num}</option>`).join('');
+  s.innerHTML='<option value="">انتخاب...</option>'+DB.halls.map(h=>`<option value="${h.num}">${h.desc?h.desc+' ('+h.num+')':'سالن '+h.num}</option>`).join('');
 }
 function fillRqFt() {
   const s=document.getElementById('rq-ft'); if(!s) return;
   s.innerHTML='<option value="">انتخاب...</option>'+DB.failureTypes.map(f=>`<option value="${f.id}">${f.title}</option>`).join('');
 }
 function rqZone() {
-  const hId=parseInt(document.getElementById('rq-hall').value);
-  const h=DB.halls.find(h=>h.id===hId);
-  document.getElementById('rq-zone').innerHTML=h?h.zones.map(z=>`<option value="${z.id}">زون ${z.num}</option>`).join(''):'<option value="">ابتدا سالن</option>';
+  const hNum=document.getElementById('rq-hall').value;
+  const h=DB.halls.find(h=>String(h.num)===String(hNum));
+  // zone value = zone num (نه id)
+  const zSel = document.getElementById('rq-zone');
+  zSel.innerHTML = h ? h.zones.map(z=>`<option value="${z.num}">زون ${z.num}</option>`).join('') : '<option value="">ابتدا سالن</option>';
+  if(h && h.zones.length > 0) zSel.value = h.zones[0].num; // auto-select اولین زون
   rqMachine();
 }
 function rqMachine() {
-  const hId=parseInt(document.getElementById('rq-hall').value);
-  const zId=parseInt(document.getElementById('rq-zone').value);
-  const ms=DB.machines.filter(m=>m.hallId===hId&&(!zId||m.zoneId===zId));
+  const hNum=document.getElementById('rq-hall').value;
+  const zNum=document.getElementById('rq-zone').value;
+  // فیلتر با hallNum و zoneNum که مستقیم ذخیره شدن
+  const ms=DB.machines.filter(m=>{
+    const hMatch=String(m.hallNum)===String(hNum)||String(m.hallId)===String(hNum);
+    const zMatch=!zNum||String(m.zoneNum)===String(zNum)||String(m.zoneId)===String(zNum);
+    return hMatch&&zMatch;
+  });
   document.getElementById('rq-machine').innerHTML='<option value="">انتخاب...</option>'+ms.map(m=>`<option value="${m.id}">${m.code}${m.model?' — '+m.model:''}</option>`).join('');
   rqFloor();
 }
 function rqFloor() {
-  const mId=parseInt(document.getElementById('rq-machine').value);
-  const m=DB.machines.find(m=>m.id===mId);
+  const mId=document.getElementById('rq-machine').value;
+  const m=DB.machines.find(m=>String(m.id)===String(mId));
   document.getElementById('rq-floor').innerHTML=m?Array.from({length:m.floors},(_,i)=>`<option value="${i+1}">طبقه ${i+1}</option>`).join(''):'<option value="">ابتدا دستگاه</option>';
 }
 function initReqForm() {
   fillRqHalls(); fillRqFt();
   rStep(0);
+  // auto-select اولین سالن و زون
+  const hallSel = document.getElementById('rq-hall');
+  if(hallSel && DB.halls.length > 0 && !hallSel.value) {
+    hallSel.value = String(DB.halls[0].num);
+    rqZone();
+  }
 }
 function rStep(n) {
   if(n===1){
@@ -772,7 +825,7 @@ async function submitReq() {
   const desc=document.getElementById('rq-desc').value;
   const unit=document.getElementById('rq-unit').value;
   const h=DB.halls.find(h=>h.id===hId); const z=h?.zones.find(z=>z.id===zId);
-  const m=DB.machines.find(m=>m.id===mId); const ft=DB.failureTypes.find(f=>f.id===ftId);
+  const m=DB.machines.find(m=>String(m.id)===String(mId)); const ft=DB.failureTypes.find(f=>f.id===ftId);
   if(ft) ft.usageCount++;
   DB.requests.push({id:DB._rId++,unit,hallId:hId,zoneId:zId,machineId:mId,floor,eyeNum:eye,dafNum:daf,failureTypeId:ftId,priority:prio,description:desc,status:'pending',createdAt:new Date().toLocaleTimeString('fa'),hallNum:h?.num,zoneNum:z?.num,machineCode:m?.code,failureTitle:ft?.title});
   initReqForm(); renderDash(); updateBadges(); renderFailures();
@@ -786,7 +839,11 @@ function renderDash() {
   if(!rows.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1.5rem;">هنوز درخواستی ثبت نشده</td></tr>';}
   else b.innerHTML=rows.map(r=>{
     const st={pending:'<span class="badge b-pend">در انتظار</span>',assigned:'<span class="badge b-asgn">تخصیص یافت</span>',reported:'<span class="badge b-pend">گزارش داده</span>',approved:'<span class="badge b-done">تایید ✓</span>',rejected:'<span class="badge b-rep">رد شد</span>'}[r.status]||r.status;
-    return `<tr><td>${fid(r.id)}</td><td>سالن ${r.hallNum||'?'} › زون ${r.zoneNum||'?'} › ${r.machineCode||'?'}</td><td>ط${r.floor}/چ${r.eyeNum}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r.dafNum}</span></td><td>${r.failureTitle||'?'}</td><td>${st}</td></tr>`;
+    const __m=r?DB.machines.find(x=>x.id===r.machineId):null;
+    const __h=__m?DB.halls.find(x=>x.id===__m.hallId):null;
+    const __z=(__h&&__m)?__h.zones.find(x=>x.id===__m.zoneId):null;
+    const __loc=__h?`سالن ${__h.num} › زون ${__z?.num||'?'} › ${__m.code}`:(r.machineCode||'?');
+    return `<tr><td>${fid(r.id)}</td><td>${__loc}</td><td>ط${r.floor}/چ${r.eyeNum}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r.dafNum}</span></td><td>${r.failureTitle||'?'}</td><td>${st}</td></tr>`;
   }).join('');
   const reps=detectRepeats();
   const rp=document.getElementById('rep-panel'); const ra=document.getElementById('rep-alerts');
@@ -800,20 +857,28 @@ function renderWO() {
   const pending=DB.requests.filter(r=>r.status==='pending');
   const c=document.getElementById('wo-pending');
   if(!pending.length){c.innerHTML='<div style="color:var(--gray);font-size:13px;text-align:center;padding:1rem;">درخواستی در انتظار تخصیص نیست</div>';}
-  else c.innerHTML=pending.map(r=>`<div style="background:var(--cream2);border-radius:10px;padding:.7rem .9rem;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  else c.innerHTML=pending.map(r=>{
+    const _m=DB.machines.find(x=>x.id===r.machineId)||(r.machineCode?{code:r.machineCode,hallId:0}:null);
+    const _h=_m?DB.halls.find(x=>x.id===_m.hallId):null;
+    const _z=(_h&&_m)?_h.zones.find(x=>x.id===_m.zoneId):null;
+    const _loc=_h?`سالن ${_h.num} › زون ${_z?.num||'?'} › ${_m.code}`:(r.machineCode||'?');
+    return `<div style="background:var(--cream2);border-radius:10px;padding:.7rem .9rem;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <strong style="font-size:13px;">${fid(r.id)}</strong>
-    <span style="font-size:13px;">${r.machineCode||'?'} › ط${r.floor} › چ${r.eyeNum}</span>
+    <span style="font-size:12px;color:var(--navy);">${_loc} › ط${r.floor} › چ${r.eyeNum}</span>
     <span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r.dafNum}</span>
     <span class="badge b-gray">${r.failureTitle||'?'}</span>
     <span style="font-size:12px;color:var(--gray);">${r.unit}</span>
     <button class="btn btn-p btn-sm" style="margin-right:auto;" onclick="openAssign(${r.id})">تخصیص تعمیرکار</button>
-  </div>`).join('');
+  </div>`}).join('');
   const b=document.getElementById('wo-tbody');
   if(!DB.workOrders.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem;">ثبت نشده</td></tr>';return;}
   b.innerHTML=DB.workOrders.map(w=>{
     const r=DB.requests.find(x=>x.id===w.requestId); const t=DB.technicians.find(x=>x.id===w.techId);
     const st={assigned:'<span class="badge b-asgn">در جریان</span>',reported:'<span class="badge b-pend">گزارش داده</span>',approved:'<span class="badge b-done">تایید شد</span>',rejected:'<span class="badge b-rep">رد شد</span>'}[w.status]||w.status;
-    return `<tr><td>${fid(w.id)}</td><td>${r?.machineCode||'?'}/چ${r?.eyeNum||'?'}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r?.dafNum||'?'}</span></td><td>${r?.failureTitle||'?'}</td><td>${t?.name||'?'}</td><td>${st}</td></tr>`;
+    const _wm=r?DB.machines.find(x=>x.id===r.machineId):null;
+    const _wh=_wm?DB.halls.find(x=>x.id===_wm.hallId):null;
+    const _wloc=_wh?`س${_wh.num}/${_wm.code}`:(r?.machineCode||'?');
+    return `<tr><td>${fid(w.id)}</td><td>${_wloc}/چ${r?.eyeNum||'?'}</td><td><span style="background:var(--navy);color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;">داف ${r?.dafNum||'?'}</span></td><td>${r?.failureTitle||'?'}</td><td>${t?.name||'?'}</td><td>${st}</td></tr>`;
   }).join('');
 }
 function openAssign(rid) {
@@ -980,14 +1045,36 @@ function renderAnalytics() {
   document.getElementById('an-rep').textContent=detectRepeats().length;
   document.getElementById('an-m').textContent=DB.machines.length;
   document.getElementById('an-t').textContent=DB.technicians.length;
+  // آمار تایید شده‌ها
+  const approvedCount=DB.repairReports.filter(r=>r.approved).length;
+  const pendingApprove=DB.repairReports.filter(r=>!r.approved&&!r.rejected).length;
+  // نشان دادن آمار اضافی در داشبورد
+  if(document.getElementById('s-done')) document.getElementById('s-done').textContent=approvedCount;
+  if(document.getElementById('s-pend')) document.getElementById('s-pend').textContent=pendingApprove;
   const bt=document.getElementById('an-ft');
   if(!DB.failureTypes.length||!DB.requests.length){bt.innerHTML='<div style="color:var(--gray);font-size:13px;">داده‌ای نیست</div>';}
-  else{const max=Math.max(...DB.failureTypes.map(f=>f.usageCount),1);const clrs=['var(--orange)','var(--red)','var(--yellow)','var(--pink)','var(--navy2)'];
-    bt.innerHTML=DB.failureTypes.map((f,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;border-bottom:1px solid var(--cream2);font-size:13px;"><div style="min-width:90px;color:var(--gray);font-size:12px;">${f.title}</div><div style="flex:1;background:var(--cream2);border-radius:4px;height:14px;overflow:hidden;"><div style="width:${Math.round(f.usageCount/max*100)}%;height:100%;border-radius:4px;background:${clrs[i%clrs.length]};"></div></div><div style="font-size:12px;font-weight:700;color:var(--navy);min-width:20px;">${f.usageCount}</div></div>`).join('');}
+  else{const ftCounts={};
+    DB.requests.forEach(r=>{ if(r.failureTypeId) ftCounts[r.failureTypeId]=(ftCounts[r.failureTypeId]||0)+1; });
+    const sorted=[...DB.failureTypes].map(f=>({...f,cnt:ftCounts[f.id]||f.usageCount||0})).filter(f=>f.cnt>0).sort((a,b)=>b.cnt-a.cnt);
+    const max=Math.max(...sorted.map(f=>f.cnt),1);
+    const clrs=['var(--orange)','var(--red)','var(--yellow)','var(--pink)','var(--navy2)'];
+    bt.innerHTML=sorted.map((f,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;border-bottom:1px solid var(--cream2);font-size:13px;"><div style="min-width:90px;color:var(--gray);font-size:11px;overflow:hidden;text-overflow:ellipsis;" title="${f.title}">${f.title}</div><div style="flex:1;background:var(--cream2);border-radius:4px;height:14px;overflow:hidden;"><div style="width:${Math.round(f.cnt/max*100)}%;height:100%;border-radius:4px;background:${clrs[i%clrs.length]};"></div></div><div style="font-size:12px;font-weight:700;min-width:22px;">${f.cnt}</div></div>`).join('');}
   const btech=document.getElementById('an-tech');
-  const active=DB.technicians.filter(t=>t.repairCount>0);
+  // محاسبه مجدد تعداد تعمیر از workOrders واقعی
+  const techStats={};
+  DB.workOrders.forEach(w=>{
+    if(!techStats[w.techId]) techStats[w.techId]={repair:0,approved:0};
+    techStats[w.techId].repair++;
+    if(w.status==='approved') techStats[w.techId].approved++;
+  });
+  const active=DB.technicians.filter(t=>t.repairCount>0||techStats[t.id]?.repair>0);
   if(!active.length){btech.innerHTML='<div style="color:var(--gray);font-size:13px;">هنوز تعمیری انجام نشده</div>';return;}
-  btech.innerHTML=active.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;border-bottom:1px solid var(--cream2);font-size:13px;"><div style="min-width:80px;color:var(--gray);font-size:12px;">${t.name.split(' ')[0]}</div><div>${t.repairCount} تعمیر</div><div style="margin-right:auto;"><span class="badge b-done">${Math.round(t.approvedCount/t.repairCount*100)}%</span></div></div>`).join('');
+  btech.innerHTML=active.map(t=>{
+    const rc=t.repairCount||(techStats[t.id]?.repair||0);
+    const ac=t.approvedCount||(techStats[t.id]?.approved||0);
+    const pct=rc>0?Math.round(ac/rc*100):0;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:.35rem 0;border-bottom:1px solid var(--cream2);font-size:13px;"><div style="min-width:80px;color:var(--gray);font-size:12px;">${t.name.split(' ')[0]}</div><div>${rc} تعمیر</div><div style="margin-right:auto;"><span class="badge ${pct>=90?'b-done':pct>=75?'b-asgn':'b-pend'}">${pct}%</span></div></div>`;
+  }).join('');
 }
 
 
@@ -1064,6 +1151,41 @@ function xlGoStep(n){
   });
   if(n===2) buildXlColMap();
 }
+// بعد از import — فایل همونه، شیت دیگه انتخاب کن
+function xlResetForNext(){
+  xlSheetData=[]; xlHeaders=[];
+  document.getElementById('xl-preview-wrap').style.display='none';
+  document.getElementById('xl-preview').innerHTML='';
+  document.querySelectorAll('.xtab').forEach(t=>t.classList.remove('active'));
+  if(xlWb){ xlGoStep(1); toast('شیت بعدی را انتخاب کنید','ok'); }
+  else { xlFullReset(); }
+}
+// ریست کامل برای فایل جدید
+function xlFullReset(){
+  xlWb=null; xlCurSheet=''; xlSheetData=[]; xlHeaders=[];
+  // پاک کردن و ساخت دوباره input فایل — مرورگر value رو cache میکنه
+  const oldInput=document.getElementById('xl-file');
+  const ni=document.createElement('input');
+  ni.type='file'; ni.id='xl-file'; ni.accept='.xlsx,.xls,.csv'; ni.style.display='none';
+  ni.addEventListener('change',function(e){ if(e.target.files[0]) xlLoad(e.target.files[0]); });
+  oldInput.parentNode.replaceChild(ni,oldInput);
+  // اتصال دوباره drop-zone به input جدید
+  const dz=document.getElementById('xl-dropzone');
+  if(dz) dz.onclick=function(){ document.getElementById('xl-file').click(); };
+  document.getElementById('xl-preview-wrap').style.display='none';
+  document.getElementById('xl-preview').innerHTML='';
+  document.getElementById('xl-tabs').innerHTML='';
+  document.getElementById('xl-fname').textContent='';
+  xlGoStep(0);
+  toast('آماده برای آپلود فایل جدید','ok');
+}
+function addHours(timeStr, hours){
+  try{
+    const [h,m]=timeStr.split(':').map(Number);
+    const total=h*60+m+Math.round(hours*60);
+    return `${Math.floor(total/60)%24}:${String(total%60).padStart(2,'0')}`;
+  }catch(e){return timeStr;}
+}
 async function xlImport(){
   const dtype=document.getElementById('xl-dtype').value;
   const dup=document.getElementById('xl-dup').value;
@@ -1078,14 +1200,20 @@ async function xlImport(){
       const num=get('num'); if(!num) return;
       if(DB.halls.find(h=>h.num===num)){if(dup==='skip'){skipped++;return;} DB.halls=DB.halls.filter(h=>h.num!==num);}
       const zones=parseInt(get('zones'))||1;
-      DB.halls.push({id:Date.now()+Math.random(),num,desc:get('desc'),zones:Array.from({length:zones},(_,i)=>({id:Date.now()+Math.random(),num:String(i+1)}))});
+      const hid=1000+DB.halls.length;
+      DB.halls.push({id:hid,num,desc:get('desc'),zones:Array.from({length:zones},(_,i)=>({id:hid*100+(i+1),num:String(i+1)}))});
       added++;
     } else if(dtype==='machines'){
       const code=get('code'); if(!code) return;
       if(DB.machines.find(m=>m.code===code)){if(dup==='skip'){skipped++;return;} DB.machines=DB.machines.filter(m=>m.code!==code);}
-      const h=DB.halls.find(h=>h.num===get('hallNum'));
+      const hallNumVal=String(get('hallNum')||'').trim();
+      const h=DB.halls.find(h=>String(h.num).trim()===hallNumVal)||DB.halls.find(h=>(h.desc||'').includes(hallNumVal));
       const z=h?.zones.find(z=>z.num===get('zoneNum'));
-      DB.machines.push({id:Date.now()+Math.random(),hallId:h?.id||0,zoneId:z?.id||0,code,model:get('model'),floors:parseInt(get('floors'))||1,eyesPerFloor:parseInt(get('eyesPerFloor'))||100,dafDays:parseInt(get('dafDays'))||7});
+      const mid=2000+DB.machines.length;
+      // اطمینان از پیدا شدن zone با مقایسه string
+      const zoneNumStr=String(get('zoneNum')||'1').trim();
+      const zFixed=h?.zones.find(z=>String(z.num).trim()===zoneNumStr)||h?.zones[0];
+      DB.machines.push({id:mid,hallId:h?.id||0,zoneId:zFixed?.id||0,hallNum:hallNumVal,zoneNum:zoneNumStr,code,model:get('model'),floors:parseInt(get('floors'))||1,eyesPerFloor:parseInt(get('eyesPerFloor'))||100,dafDays:parseInt(get('dafDays'))||7});
       added++;
     } else if(dtype==='technicians'){
       const name=get('name'); const user=get('username')||name; if(!name) return;
@@ -1099,19 +1227,73 @@ async function xlImport(){
       added++;
     } else if(dtype==='requests'){
       const machineCode=get('machineCode'); const eyeNum=get('eyeNum'); if(!machineCode||!eyeNum) return;
-      const m=DB.machines.find(x=>x.code===machineCode);
+      // پیدا کردن دستگاه — جستجوی دقیق و تقریبی
+      let m=DB.machines.find(x=>x.code===machineCode);
+      if(!m) m=DB.machines.find(x=>x.code.replace(/\s/g,'')===machineCode.replace(/\s/g,''));
+      if(!m) m=DB.machines.find(x=>x.code.toLowerCase()===machineCode.toLowerCase());
       const ft=DB.failureTypes.find(x=>x.title===get('failureTitle'));
-      const h=DB.halls.find(x=>x.id===m?.hallId);
-      const z=h?.zones.find(x=>x.id===m?.zoneId);
-      DB.requests.push({id:DB._rId++,unit:get('unit')||'نامشخص',hallId:m?.hallId||0,zoneId:m?.zoneId||0,machineId:m?.id||0,floor:get('floor')||'1',eyeNum,dafNum:get('dafNum')||'1',failureTypeId:ft?.id||0,priority:get('priority')||'normal',description:get('description'),status:'pending',createdAt:new Date().toLocaleTimeString('fa'),hallNum:h?.num,zoneNum:z?.num,machineCode,failureTitle:get('failureTitle')});
+      const h=m?DB.halls.find(x=>x.id===m.hallId):null;
+      const z=(h&&m)?h.zones.find(x=>x.id===m.zoneId):null;
+      const reqStatus=get('priority')==='critical'?'approved':(get('priority')==='urgent'?'approved':'approved');
+      const startH=get('ساعت_شروع')||'08:00';
+      const dur=parseFloat(get('مدت_ساعت'))||1;
+      const endH=addHours(startH,dur);
+      const tech=DB.technicians.find(x=>x.name===get('تعمیرکار'))||DB.technicians[0];
+      const req={
+        id:DB._rId++,unit:get('unit')||'کنترل فرایند',
+        hallId:m?.hallId||0,zoneId:m?.zoneId||0,machineId:m?.id||0,
+        floor:get('floor')||'1',eyeNum,
+        dafNum:get('dafNum')||'001',
+        failureTypeId:ft?.id||0,
+        priority:get('priority')||'normal',
+        description:get('description'),
+        status:tech?'approved':'pending',
+        createdAt:get('تاریخ')||new Date().toLocaleDateString('fa'),
+        hallNum:h?.num||get('hallNum')||'?',
+        zoneNum:z?.num||'1',
+        machineCode:m?.code||machineCode,
+        failureTitle:ft?.title||get('failureTitle')
+      };
+      DB.requests.push(req);
       if(ft) ft.usageCount++;
+      // ساخت خودکار workOrder و repairReport
+      if(tech){
+        const woId=DB._wId++;
+        DB.workOrders.push({id:woId,requestId:req.id,techId:tech.id,startPlan:startH,endPlan:endH,status:'approved'});
+        const repId=DB._pId++;
+        DB.repairReports.push({
+          id:repId,woId:woId,
+          startTime:startH,endTime:endH,
+          description:get('description')||'تعمیر انجام شد',
+          parts:[],warehouse:'انبار نت مرکزی',
+          approved:true,rejected:false
+        });
+        tech.repairCount=(tech.repairCount||0)+1;
+        tech.approvedCount=(tech.approvedCount||0)+1;
+      }
       added++;
     }
   });
   await saveDB(); renderAll();
-  document.getElementById('xl-result').innerHTML=`<strong>${added}</strong> ردیف وارد شد به <strong>${DTYPE_LABELS[dtype]}</strong>${skipped?` | <strong>${skipped}</strong> ردیف نادیده گرفته شد`:''}`;
+  // گزارش جزئیات import
+  let detail='';
+  if(dtype==='machines'){
+    const linked=DB.machines.filter(m=>m.hallId&&m.hallId!==0).length;
+    const total=DB.machines.length;
+    detail=` | ${linked} از ${total} دستگاه به سالن لینک شد`;
+  } else if(dtype==='requests'){
+    const withMachine=DB.requests.filter(r=>r.machineId&&r.machineId!==0).length;
+    detail=` | ${withMachine} درخواست به دستگاه وصل شد`;
+  }
+  document.getElementById('xl-result').innerHTML=`<strong>${added}</strong> ردیف وارد شد به <strong>${DTYPE_LABELS[dtype]}</strong>${skipped?` | <strong>${skipped}</strong> نادیده گرفته شد`:''}${detail}`;
+  // نشان‌دهنده پیشرفت import
+  const doneMap={halls:'imp-1',machines:'imp-2',technicians:'imp-3',failureTypes:'imp-4',requests:'imp-5'};
+  if(doneMap[dtype]){
+    const el=document.getElementById(doneMap[dtype]);
+    if(el){el.style.background='#27AE60';el.style.color='#fff';}
+  }
   xlGoStep(3);
-  toast(`${added} ردیف import شد`,'ok');
+  toast(`${added} ردیف import شد ✓`,'ok');
 }
 function downloadTemplate(){
   const wb2=XLSX.utils.book_new();
